@@ -21,11 +21,7 @@ def main(options,args):
 	
 	njobs = options.njobs; 
 
-	# lhefile = "%d_%gGeV_phi0_theta%g_x0_y0_z%s_%s.lhe"%(nevtsperjob,parenergy,partheta,zpos,parNameDict[partype])
-	# #lhefile = "{0}_{1}GeV_phi0_theta0_x0_y0_z{2}_{3}.lhe".format(nevtsperjob,parenergy,zpos,parNameDict[partype])
-	os.system("cp setupLPC.sh %s/." % (subdir))
 	os.system("cp %s/Detectors/data/ldmx-det-full-v0/*.gdml %s/." % (swdir,subdir))
-	# os.system("cp %s/ldmx-sw-install/bin/ldmx-setup-env.sh %s/." % (swdir,subdir))
 	os.chdir(subdir);
 	os.system("tar -cvzf inputs.tar.gz setupLPC.sh *.gdml" );
 
