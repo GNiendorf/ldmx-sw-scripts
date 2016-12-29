@@ -1,0 +1,10 @@
+/persistency/gdml/read detector-hcalonly.gdml
+/run/initialize
+/vis/open DAWNFILE
+/vis/scene/create
+/vis/scene/add/axes 0 0 0 0.0625 m
+/vis/drawVolume 
+/vis/viewer/set/viewpointThetaPhi 90 0
+
+/vis/viewer/set/autoRefresh true
+/vis/viewer/refresh

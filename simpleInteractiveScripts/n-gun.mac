@@ -1,0 +1,8 @@
+/persistency/gdml/read detector-hcalonly.gdml
+/random/setSeeds 12354 23465 
+/run/initialize
+/gun/particle neutron
+/gun/energy 3 GeV
+/gun/position 0 0 200 mm
+/gun/direction 0.0 0.0 1.0 
+/run/beamOn 10
