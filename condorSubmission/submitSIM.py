@@ -21,9 +21,9 @@ def main(options,args):
 	
 	njobs = options.njobs; 
 
-	os.system("cp %s/Detectors/data/ldmx-det-full-v0/*.gdml %s/." % (swdir,subdir))
+	os.system("cp /uscms_data/d2/ntran/physics/LDMX/FullFramework/go12/ldmx-sw/go1/*.gdml /uscms_data/d2/ntran/physics/LDMX/FullFramework/go12/ldmx-sw/go1/*.dat setupLPC.sh %s/." % (subdir))
 	os.chdir(subdir);
-	os.system("tar -cvzf inputs.tar.gz setupLPC.sh *.gdml" );
+	os.system("tar -cvzf inputs.tar.gz setupLPC.sh *.gdml *.dat" );
 
 	for i in range(njobs):
 
@@ -39,19 +39,22 @@ def main(options,args):
 		f1.write("ls \n");
 		f1.write("ldmx-sim g4steer_%s.mac \n" % (tag));
 		f1.write("xrdcp ldmx_sim_events.root root://cmseos.fnal.gov/%s/ldmx_sim_events_%s.root \n" % (odir,tag));
-		f1.write("rm ldmx_sim_events.root \n");		
+		f1.write("ldmx-hcal-digi-producer ldmx_sim_events.root ldmx_hcal_digi.root \n");
+		f1.write("xrdcp ldmx_hcal_digi.root root://cmseos.fnal.gov/%s/ldmx_hcal_digi_%s.root \n" % (odir,tag));		
+		f1.write("rm ldmx_sim_events.root ldmx_hcal_digi.root \n");		
 		f1.close();
 
 		# making the geant steering macro
 		fsn = "g4steer_%s.mac" % tag;
 		fs=open(fsn,'w');
-		fs.write("/persistency/gdml/read detector.gdml \n");
+		fs.write("/persistency/gdml/read detector-hcalOnly.gdml \n");
+		fs.write("/random/setSeeds 12354 23465 \n");
 		fs.write("/run/initialize \n");
-		fs.write("/gun/particle e- \n");
-		fs.write("/gun/energy 4 GeV \n");
-		fs.write("/gun/position -27.926 5 -700 mm \n");
-		fs.write("/gun/direction 0.3138 0 3.9877 GeV \n");
-		fs.write("/run/beamOn 10 \n");
+		fs.write("/gun/particle neutron \n");
+		fs.write("/gun/energy 3 GeV \n");
+		fs.write("/gun/position 0 0 200 mm \n");
+		fs.write("/gun/direction 0.0 0.0 1.0 GeV \n");
+		fs.write("/run/beamOn 100 \n");
 		fs.close();
 
 		# making the jdl file
