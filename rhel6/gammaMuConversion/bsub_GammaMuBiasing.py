@@ -77,7 +77,7 @@ def main(options,args):
 		fs.write("/run/beamOn %i \n" % (eventsPerJob));
 		fs.close();
 
-		command = 'bsub -W 2800 -q medium -o olog_%s.log < tmp_%s.sh' % (tag,tag);
+		command = 'bsub -W 2800 -q long -o olog_%s.log < tmp_%s.sh' % (tag,tag);
 		if not options.nosubmit: os.system(command);
 
 	os.chdir("../.");
