@@ -32,7 +32,7 @@ def main(options,args):
 		os.system('rm -r %s' % subdir)
 		os.makedirs(subdir)
 	
-	os.system('tar -cvzf inputs.tar.gz fullRecoConfig.py');	
+	os.system('tar -cvzf inputs.tar.gz gammaMuAnalyzer.py ../tdrstyle.py Loader.C');	
 	os.system('mv inputs.tar.gz %s/.' % (subdir))
 	os.chdir(subdir);
 
@@ -47,13 +47,13 @@ def main(options,args):
 		f1.write('source /u/ey/ntran/ldmx/setup/setup.sh \n');		
 		f1.write('source %s/bin/ldmx-setup-env.sh \n' % (swdir));		
 		f1.write('cp inputs.tar.gz ${__LSF_JOB_TMPDIR__}/. \n');
-		f1.write('cp %s/%s.root ${__LSF_JOB_TMPDIR__}/current_ldmx_sim_events.root \n' % (options.idir,fn));
+		f1.write('cp %s/%s.root ${__LSF_JOB_TMPDIR__}/. \n' % (options.idir,fn));
 		f1.write('cd ${__LSF_JOB_TMPDIR__} \n');
 		f1.write('pwd \n');
 		f1.write('tar -xvzf inputs.tar.gz \n');
 		f1.write('ls -l \n');
-		f1.write("ldmx-app fullRecoConfig.py \n");
-		f1.write("mv ldmx_recon_events.root ${LSB_OUTDIR}/recon_%s.root \n" % (fn));
+		f1.write("python gammaMuAnalyzer.py -b -i %s.root -o ana_%s.root --swdir %s \n" % (fn,fn,swdir));
+		f1.write("mv ana_%s.root ${LSB_OUTDIR}/ana_%s.root \n" % (fn,fn));
 		f1.close();
 
 		command = 'bsub -q short -o olog_%s.log < tmp_%i_%s.sh' % (fn,i,fn);

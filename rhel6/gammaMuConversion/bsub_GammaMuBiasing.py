@@ -52,8 +52,8 @@ def main(options,args):
 
 		# making the geant steering macro
 		fsn = "g4steer_%s.mac" % tag;
-		seed1 = 12345;
-		seed2 = 23456;          		
+		seed1 = 24345;
+		seed2 = 35456;          		
 		fs=open(fsn,'w');
 		fs.write("/persistency/gdml/read detector.gdml \n");
 		fs.write("/random/setSeeds %i %i \n" % (seed1+i, seed2+i));
