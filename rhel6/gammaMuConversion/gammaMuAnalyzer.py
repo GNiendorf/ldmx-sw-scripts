@@ -14,12 +14,13 @@ r.gROOT.ProcessLine('.L Loader.C+')
 ######################################################################
 class sampleContainer:
 
-	def __init__(self, fn, ofn):
+	def __init__(self, fn, ofn, tag):
 
 		print "Hello In!"
 		self.fin = r.TFile(fn);
 		self.tin = self.fin.Get("LDMX_Events")
 		self.nHCalLayers = 50;
+		self.tag = int(tag);
 
 		self.fn_out = ofn;
 		self.fout = r.TFile(self.fn_out,"RECREATE");
@@ -47,12 +48,19 @@ class sampleContainer:
 
 		# results
 		self.tout = r.TTree("otree","otree");
+		self.b_itag = array('i',[0]);
 		self.b_bTrig = array('f',[0.]);
 		self.b_bMuons = array('f',[0.]);
 		self.b_bHcalNoVeto = array('f',[0.]);
 		self.b_bEcalNoVeto = array('f',[0.]);
 		self.b_bTkNoVeto = array('f',[0.]);
 		
+		self.b_ecalV_LongestMipTrack = array('f',[0.]);
+		self.b_ecalV_NMipTracks = array('f',[0.]);
+		self.b_ecalV_SummedDet = array('f',[0.]);
+		self.b_ecalV_SummedIso = array('f',[0.]);
+		self.b_ecalV_SummedOuter = array('f',[0.]);
+
 		self.b_nTrack = array('f',[0.]);
 		self.b_nTrack_4s = array('f',[0.]);
 		self.b_nTrack_3s1a = array('f',[0.]);
@@ -61,38 +69,34 @@ class sampleContainer:
 		self.b_vMuonE = r.std.vector('float')();
 		self.b_vMuonTh = r.std.vector('float')();
 
+		self.b_nHcalHits = array('f',[0.]);
+		self.b_vHcalLayer = r.std.vector('float')();
+		self.b_vHcalLayerPE = r.std.vector('float')();
+
+		self.tout.Branch("tag",self.b_itag,"tag/I");
 		self.tout.Branch("bTrig",self.b_bTrig,"bTrig/F");
 		self.tout.Branch("bMuons",self.b_bMuons,"bMuons/F");
 		self.tout.Branch("bHcalNoVeto",self.b_bHcalNoVeto,"bHcalNoVeto/F");
 		self.tout.Branch("bEcalNoVeto",self.b_bEcalNoVeto,"bEcalNoVeto/F");
 		self.tout.Branch("bTkNoVeto",self.b_bTkNoVeto,"bTkNoVeto/F");
 
+		self.tout.Branch("ecalV_LongestMipTrack",self.b_ecalV_LongestMipTrack,"ecalV_LongestMipTrack/F")
+		self.tout.Branch("ecalV_NMipTracks",self.b_ecalV_NMipTracks,"ecalV_NMipTracks/F")
+		self.tout.Branch("ecalV_SummedDet",self.b_ecalV_SummedDet,"ecalV_SummedDet/F")
+		self.tout.Branch("ecalV_SummedIso",self.b_ecalV_SummedIso,"ecalV_SummedIso/F")
+		self.tout.Branch("ecalV_SummedOuter",self.b_ecalV_SummedOuter,"ecalV_SummedOuter/F")
+
 		self.tout.Branch("nTrack",self.b_nTrack,"nTrack/F");
 		self.tout.Branch("nTrack_4s",self.b_nTrack_4s,"nTrack_4s/F");
 		self.tout.Branch("nTrack_3s1a",self.b_nTrack_3s1a,"nTrack_3s1a/F");
+		
 		self.tout.Branch("nMuons",self.b_nMuons,"nMuons/F");
 		self.tout.Branch("muonE",self.b_vMuonE);
 		self.tout.Branch("muonTh",self.b_vMuonTh);
 
-		# # counting histograms
-		# self.h_nTote = r.TH1F("h_nTote","h_nTote",1,0,1);
-		# self.h_nTrig = r.TH1F("h_nTrig","h_nTrig",1,0,1);
-		# self.h_nMuons = r.TH1F("h_nMuons","h_nMuons",10,0,10);
-		# self.h_nHasMuons = r.TH1F("h_nHasMuons","h_nHasMuons",1,0,1);
-		# self.h_nHCalVeto = r.TH1F("h_nHCalVeto","h_nHCalVeto",1,0,1);
-		# self.h_nPassesEcalVeto = r.TH1F("h_nPassesEcalVeto","h_nPassesEcalVeto",1,0,1);
-		# self.h_nTracks_4s = r.TH1F("h_nTracks_4s","h_nTracks_4s",9,0,9);
-		# self.h_nTracks_3s1a = r.TH1F("h_nTracks_3s1a","h_nTracks_3s1a",9,0,9);
-		# self.h_nTracks = r.TH1F("h_nTracks","h_nTracks",9,0,9);
-
-		# # combo counters
-		# self.h_nTrig_noHcalVeto = r.TH1F("h_nTrig_noHcalVeto","h_nTrig_noHcalVeto",1,0,1);
-		# self.h_nPassesEcalVeto_nTrig_noHcalVeto = r.TH1F("h_nPassesEcalVeto_nTrig_noHcalVeto","h_nPassesEcalVeto_nTrig_noHcalVeto",1,0,1);
-
-		# self.h_nTrig_noHcalVeto_hasMuons = r.TH1F("h_nTrig_noHcalVeto_hasMuons","h_nTrig_noHcalVeto_hasMuons",1,0,1);
-
-		# self.h_muonEnergy = r.TH1F("h_muonEnergy","; E_{muon}; frac of events", 100, 0, 4000);
-		# self.h_muonAngle = r.TH1F("h_muonAngle","; #Theta; frac of events", 100, 0, 180);
+		self.tout.Branch("nHcalHits",self.b_nHcalHits,"nHcalHits/F");
+		self.tout.Branch("hcalLayer",self.b_vHcalLayer);
+		self.tout.Branch("hcalLayerPE",self.b_vHcalLayerPE);
 
 		self.hs_evDisp_Trig_NoHCalVeto_HasMuons = [];
 
@@ -100,19 +104,6 @@ class sampleContainer:
 		self.writeOutHistos();
 
 	def writeOutHistos(self):
-
-		# self.h_nTote.Write();
-		# self.h_nTrig.Write();
-		# self.h_nMuons.Write();
-		# self.h_nHasMuons.Write();
-		# self.h_nHCalVeto.Write();
-		# self.h_nPassesEcalVeto.Write();
-		# self.h_nTracks.Write();
-		# self.h_nTracks_4s.Write();
-		# self.h_nTracks_3s1a.Write();
-
-		# self.h_nTrig_noHcalVeto.Write();
-		# self.h_nTrig_noHcalVeto_hasMuons.Write();
 
 		for h in self.hs_evDisp_Trig_NoHCalVeto_HasMuons: h.Write();
 
@@ -124,6 +115,7 @@ class sampleContainer:
 	####################################################
 	def loop(self):
 
+		self.b_itag[0] = self.tag;
 		nent = self.tin.GetEntriesFast();
 		print "nent = ", nent
 		for i in range(nent):
@@ -136,6 +128,8 @@ class sampleContainer:
 			# clear vectors
 			self.b_vMuonE.clear();
 			self.b_vMuonTh.clear();
+			self.b_vHcalLayer.clear();
+			self.b_vHcalLayerPE.clear();
 
 			# trigger info
 			if self.trigRes[0].passed(): self.b_bTrig[0] = 1.;
@@ -144,12 +138,17 @@ class sampleContainer:
 			# ecal veto info
 			if self.ecalVetoRes[0].passesVeto(): self.b_bEcalNoVeto[0] = 1.;
 			else: self.b_bEcalNoVeto[0] = 0.;
+			self.b_ecalV_LongestMipTrack[0] = self.ecalVetoRes[0].getLongestMipTrack();
+			self.b_ecalV_NMipTracks[0] = self.ecalVetoRes[0].getNMipTracks();
+			self.b_ecalV_SummedDet[0] = self.ecalVetoRes[0].getSummedDet();
+			self.b_ecalV_SummedIso[0] = self.ecalVetoRes[0].getSummedIso();
+			self.b_ecalV_SummedOuter[0] = self.ecalVetoRes[0].getSummedOuter();
 
 			# track info
 			ntracks = 0.;
 			ntracks_4s = 0.;
 			ntracks_3s1a = 0.;
-			for i,t in enumerate(self.trackRes):
+			for it,t in enumerate(self.trackRes):
 				if t.is4sFindable(): ntracks_4s += 1;
 				if t.is3s1aFindable(): ntracks_3s1a += 1;
 				if t.is4sFindable() or t.is3s1aFindable(): ntracks += 1;
@@ -166,9 +165,35 @@ class sampleContainer:
 				if hit.getPE() >= 8: 
 					b_hcalvetoed = True;
 					break;				
-			if b_hcalvetoed: self.b_bHcalNoVeto[0] = 0.;
-			else: self.b_bHcalNoVeto[0] = 1.;
+			if b_hcalvetoed: 
+				self.b_bHcalNoVeto[0] = 0.;
+				self.b_nHcalHits[0] = 0.;
+			else: 
+				self.b_bHcalNoVeto[0] = 1.;
+				self.b_nHcalHits[0] = float(self.hcalHits.GetEntries());
+				for ih,hit in enumerate(self.hcalHits):
+					self.b_vHcalLayer.push_back( hit.getLayer() );
+					self.b_vHcalLayerPE.push_back( hit.getPE() );
+			
+			if not b_hcalvetoed and self.trigRes[0].passed():
+				print "\n HCAL NOT VETOED Warning!", i
+				for ip,par in enumerate(self.simParticles):
+					if math.fabs(par.getPdgID()) == 13: 
+						nmuons += 1;
+						px = par.getMomentum()[0]
+						py = par.getMomentum()[1]
+						pz = par.getMomentum()[2]
+						theta = math.atan2(math.sqrt(px*px + py*py),pz) * 180/3.1415
+						print "NOT VETOED event -- muon ",nmuons,", e = ", par.getEnergy(), ", th = ", theta;	
+				for ip,par in enumerate(self.simParticles):
+					px = par.getMomentum()[0]
+					py = par.getMomentum()[1]
+					pz = par.getMomentum()[2]
+					theta = math.atan2(math.sqrt(px*px + py*py),pz) * 180/3.1415
+					print "NOT VETOED event -- particle ",par.getPdgID(),", e = %.2f, px,py,pz = %.2f,%.2f,%.2f" % (par.getEnergy(),px,py,pz);							
+				print "\n";
 
+			# muon info
 			nmuons = 0.;
 			for ip,par in enumerate(self.simParticles):
 				if math.fabs(par.getPdgID()) == 13: 
@@ -177,59 +202,23 @@ class sampleContainer:
 					px = par.getMomentum()[0]
 					py = par.getMomentum()[1]
 					pz = par.getMomentum()[2]
-					theta = math.atan(math.sqrt(px*px + py*py)/pz) * 180/3.1415
+					theta = math.atan2(math.sqrt(px*px + py*py),pz) * 180/3.1415
 					self.b_vMuonTh.push_back( theta );
 
 			self.b_nMuons[0] = nmuons;
 			if nmuons > 0: self.b_bMuons[0] = 1.;
 			else: self.b_bMuons[0] = 0.;
 				
-			# if b_triggered and not b_hcalvetoed and nmuons > 0: 
-			# 	self.h_nTrig_noHcalVeto_hasMuons.Fill(0.5);
-			# 	# print "======= OMG OMG OMG ", i
-			# 	for ip,par in enumerate(self.simParticles):
-			# 		print "++", par.getPdgID(), par.getEnergy(), par.getMomentum()[0], par.getMomentum()[1], par.getMomentum()[2]
-			# 		# if (par.getEnergy() > maxElEnergy) and (par.getPdgID() == 11):
-			# 		# maxElEnergy = par.getEnergy(); 
-			# 	# print self.ecalSimHits.GetEntries(), self.hcalSimHits.GetEntries(), self.ecalHits.GetEntries(), self.hcalHits.GetEntries()
-				
-			# 	tmph = r.TH3F("h_evdisp_"+str(i),";z;x;y",50,200,500,50,-300,300,50,-300,300);
-			# 	for iesh,esh in enumerate(self.ecalSimHits):
-			# 		# print iesh, esh.getPosition()[0], esh.getPosition()[1], esh.getPosition()[2], esh.getEdep()
-			# 		tmph.Fill(esh.getPosition()[2], esh.getPosition()[0], esh.getPosition()[1], esh.getEdep())
-			# 	for ihsh,hsh in enumerate(self.hcalSimHits):
-			# 		# print ihsh, hsh.getPosition()[0], hsh.getPosition()[1], hsh.getPosition()[2], hsh.getEdep()
-			# 		tmph.Fill(hsh.getPosition()[2], hsh.getPosition()[0], hsh.getPosition()[1], hsh.getEdep())
-			# 	self.hs_evDisp_Trig_NoHCalVeto_HasMuons.append( tmph );
-			# 	backsum = 0;
-			# 	frontsum = 0;
-			# 	for ieh,eh in enumerate(self.ecalHits):
-			# 		print ieh, eh.getEnergy(), eh.getLayer()
-			# 		if eh.getLayer() >= 20: backsum += eh.getEnergy();
-			# 		else: frontsum += eh.getEnergy();
-			# 	# print "Ecal energy..."
-			# 	# print "backsum = ", backsum, ", frontsum = ", frontsum, ", triggerEsum = ", self.trigRes[0].getAlgoVar0();
-			# 	# for ihh,hh in enumerate(self.hcalHits):
-			# 		# print ihh, hh.getEnergy(), hh.getLayer()
-			# # for ibin in range(firstMIPLayer): self.h_eff.SetBinContent( ibin+1, self.h_eff.GetBinContent(ibin+1) + 1 );
-
 			self.tout.Fill();
 
 		print "\n";
-
-		# print "n total     = ", self.h_nTote.Integral();		
-		# print "n triggered = ", self.h_nTrig.Integral();
-		# print "n hcal veto = ", self.h_nHCalVeto.Integral();
-		# print "n triggered, no hcal veto = ", self.h_nTrig_noHcalVeto.Integral();
-		# print "n triggered, no hcal veto, has muons = ", self.h_nTrig_noHcalVeto_hasMuons.Integral();
-
 
 ######################################################################
 
 def main(options,args) : 
 	
 	print "Hello!"
-	sc = sampleContainer(options.ifile,options.ofile) ;
+	sc = sampleContainer(options.ifile,options.ofile,options.tag) ;
 
 def makeCanvas(hists, tags, norm=False, logy=True):
 
@@ -271,6 +260,7 @@ if __name__ == "__main__":
 	parser.add_option('-i','--ifile', dest='ifile', default = 'file.root',help='directory with data', metavar='idir')
 	parser.add_option('-o','--ofile', dest='ofile', default = 'ofile.root',help='directory to write plots', metavar='odir')
 	parser.add_option('--swdir', dest='swdir', default = '/u/ey/ntran/ldmx/biasing/iss94/ldmx-sw',help='directory to write plots', metavar='odir')
+	parser.add_option('--tag', dest='tag', default = '1',help='file tag', metavar='tag')
 	parser.add_option('--pseudo', action='store_true', dest='pseudo', default =False,help='data = MC', metavar='isData')
 
 	(options, args) = parser.parse_args()

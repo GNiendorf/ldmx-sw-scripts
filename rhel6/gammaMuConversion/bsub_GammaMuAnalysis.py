@@ -40,6 +40,7 @@ def main(options,args):
 
 		fn = os.path.splitext(fnf)[0] 
 		print i,fn
+		if not "2731" in fn: continue;
 
 		f1n = "tmp_%i_%s.sh" % (i,fn);
 		f1=open(f1n, 'w')
@@ -52,8 +53,8 @@ def main(options,args):
 		f1.write('pwd \n');
 		f1.write('tar -xvzf inputs.tar.gz \n');
 		f1.write('ls -l \n');
-		f1.write("python gammaMuAnalyzer.py -b -i %s.root -o ana_%s.root --swdir %s \n" % (fn,fn,swdir));
-		f1.write("mv ana_%s.root ${LSB_OUTDIR}/ana_%s.root \n" % (fn,fn));
+		f1.write("python gammaMuAnalyzer.py -b -i %s.root -o ana_%s.root --swdir %s --tag %i \n" % (fn,fn,swdir,i));
+		f1.write("mv ana_%s.root ${LSB_OUTDIR}/ana_%i_%s.root \n" % (fn,i,fn));
 		f1.close();
 
 		command = 'bsub -q short -o olog_%s.log < tmp_%i_%s.sh' % (fn,i,fn);
