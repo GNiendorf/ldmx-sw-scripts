@@ -23,19 +23,25 @@ class sampleContainer:
 		self.simParticles = r.TClonesArray('ldmx::SimParticle')
 		self.ecalSimHits = r.TClonesArray('ldmx::SimCalorimeterHit');
 		self.hcalSimHits = r.TClonesArray('ldmx::SimCalorimeterHit');
+		self.trigRes = r.TClonesArray('ldmx::TriggerResult')
+		self.ecalHits = r.TClonesArray('ldmx::EcalHit');
+		self.hcalHits = r.TClonesArray('ldmx::HcalHit');
+		self.ecalVetoRes = r.TClonesArray('ldmx::EcalVetoResult');
+		self.trackRes    = r.TClonesArray('ldmx::FindableTrackResult');
+
 		self.tin.SetBranchAddress("EventHeader",  r.AddressOf( self.evHeader ));
 		self.tin.SetBranchAddress("SimParticles_sim",  r.AddressOf( self.simParticles ));
 		self.tin.SetBranchAddress("EcalSimHits_sim",  r.AddressOf( self.ecalSimHits ));
 		self.tin.SetBranchAddress("HcalSimHits_sim",  r.AddressOf( self.hcalSimHits ));
+		self.tin.SetBranchAddress("Trigger_recon",  r.AddressOf( self.trigRes ));
+		self.tin.SetBranchAddress("hcalDigis_recon",  r.AddressOf( self.hcalHits ));
+		self.tin.SetBranchAddress("ecalDigis_recon",  r.AddressOf( self.ecalHits ));
+		self.tin.SetBranchAddress("EcalVeto_recon",  r.AddressOf( self.ecalVetoRes ));
+		self.tin.SetBranchAddress("FindableTracks_recon",  r.AddressOf( self.trackRes ));
 
 		self.fn_out = ofn;
 		self.fout = r.TFile(self.fn_out,"RECREATE");
 		self.tout = self.tin.CloneTree(0);
-
-		for i in range(self.tin.GetEntries()):
-			self.tin.GetEntry(i);
-			if i > 50: self.tout.Fill();
-
 
 		# results
 		self.loop();
@@ -64,12 +70,20 @@ class sampleContainer:
 
 			keepEvent = False;
 
-			# ...
-			if i > 50: keepEvent = True;
+			# hcal veto info
+			b_hcalvetoed = False;
+			for ih,hit in enumerate(self.hcalHits):
+					#print hit.getPE(), hit.getLayer();
+					if hit.getPE() >= 8: 
+							b_hcalvetoed = True;
+							break; 			
+
+			# trigger info
+			if self.trigRes[0].passed() and not b_hcalvetoed: keepEvent = True;
 
 			if keepEvent: self.tout.Fill();
 
-	# 	print "\n";
+		print "\n";
 
 ######################################################################
 
