@@ -40,7 +40,6 @@ def main(options,args):
 
 		fn = os.path.splitext(fnf)[0] 
 		print i,fn
-		if not "2731" in fn: continue;
 
 		f1n = "tmp_%i_%s.sh" % (i,fn);
 		f1=open(f1n, 'w')
