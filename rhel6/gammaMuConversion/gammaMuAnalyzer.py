@@ -73,6 +73,14 @@ class sampleContainer:
 		self.b_vHcalLayer = r.std.vector('float')();
 		self.b_vHcalLayerPE = r.std.vector('float')();
 
+		self.b_muonPhotonQ = array('f',[0.]);
+		self.b_muonElectronQ = array('f',[0.]);
+		self.b_photonElectronQ = array('f',[0.]);
+
+		self.b_RminRhcalSimHit = array('f',[0.]);
+		self.b_ZminRhcalSimHit = array('f',[0.]);
+		self.b_EminRhcalSimHit = array('f',[0.]);
+
 		self.tout.Branch("tag",self.b_itag,"tag/I");
 		self.tout.Branch("bTrig",self.b_bTrig,"bTrig/F");
 		self.tout.Branch("bMuons",self.b_bMuons,"bMuons/F");
@@ -97,6 +105,14 @@ class sampleContainer:
 		self.tout.Branch("nHcalHits",self.b_nHcalHits,"nHcalHits/F");
 		self.tout.Branch("hcalLayer",self.b_vHcalLayer);
 		self.tout.Branch("hcalLayerPE",self.b_vHcalLayerPE);
+
+		self.tout.Branch("muonPhotonQ",self.b_muonPhotonQ,"muonPhotonQ/F");
+		self.tout.Branch("muonElectronQ",self.b_muonElectronQ,"muonElectronQ/F");
+		self.tout.Branch("photonElectronQ",self.b_photonElectronQ,"photonElectronQ/F");
+
+		self.tout.Branch("RminRhcalSimHit",self.b_RminRhcalSimHit,"RminRhcalSimHit/F");
+		self.tout.Branch("ZminRhcalSimHit",self.b_ZminRhcalSimHit,"ZminRhcalSimHit/F");
+		self.tout.Branch("EminRhcalSimHit",self.b_EminRhcalSimHit,"EminRhcalSimHit/F");
 
 		self.hs_evDisp_Trig_NoHCalVeto_HasMuons = [];
 
@@ -177,6 +193,7 @@ class sampleContainer:
 			
 			if not b_hcalvetoed and self.trigRes[0].passed():
 				print "\n HCAL NOT VETOED Warning!", i
+				nmuons=0
 				for ip,par in enumerate(self.simParticles):
 					if math.fabs(par.getPdgID()) == 13: 
 						nmuons += 1;
@@ -209,6 +226,48 @@ class sampleContainer:
 			if nmuons > 0: self.b_bMuons[0] = 1.;
 			else: self.b_bMuons[0] = 0.;
 				
+			# Q^2 info
+			rootElectron=None
+			radiatedPhoton=None
+			ConvMuonPlus=None
+			ConvMuonMinus=None
+			self.b_muonPhotonQ[0]=0.
+			self.b_muonElectronQ[0]=0.
+			self.b_photonElectronQ[0]=0.
+			for p in self.simParticles :
+				if p.getParentCount() != 0 : continue
+				rootElectron = p
+				for daughterIndex in range(p.getDaughterCount()) :
+					daughter = p.getDaughter(daughterIndex)
+					if daughter.getDaughterCount() == 2 and abs(daughter.getDaughter(0).getPdgID()) == 13 and abs(daughter.getDaughter(1).getPdgID()) == 13 :
+						radiatedPhoton = daughter
+						if( daughter.getDaughter(0).getPdgID() == 13 ):
+							ConvMuonMinus = daughter.getDaughter(0)
+							ConvMuonPlus = daughter.getDaughter(1)
+						else : 
+							ConvMuonMinus = daughter.getDaughter(1)
+							ConvMuonPlus = daughter.getDaughter(0)
+
+			if rootElectron!=None and radiatedPhoton!=None and ConvMuonPlus!=None and ConvMuonMinus!=None : 
+				self.b_muonPhotonQ[0] = pow(pow(ConvMuonMinus.getMomentum()[0]+ConvMuonPlus.getMomentum()[0]-radiatedPhoton.getMomentum()[0],2)+pow(ConvMuonMinus.getMomentum()[1]+ConvMuonPlus.getMomentum()[1]-radiatedPhoton.getMomentum()[1],2)+pow(ConvMuonMinus.getMomentum()[2]+ConvMuonPlus.getMomentum()[2]-radiatedPhoton.getMomentum()[2],2),.5)
+
+				self.b_muonElectronQ[0] = pow(pow(ConvMuonMinus.getMomentum()[0]+ConvMuonPlus.getMomentum()[0]-rootElectron.getMomentum()[0],2)+pow(ConvMuonMinus.getMomentum()[1]+ConvMuonPlus.getMomentum()[1]-rootElectron.getMomentum()[1],2)+pow(ConvMuonMinus.getMomentum()[2]+ConvMuonPlus.getMomentum()[2]-rootElectron.getMomentum()[2],2),.5)
+				
+				self.b_photonElectronQ[0] = pow(pow(radiatedPhoton.getMomentum()[0]-rootElectron.getMomentum()[0],2)+pow(radiatedPhoton.getMomentum()[2]-rootElectron.getMomentum()[2],2)+pow(radiatedPhoton.getMomentum()[2]-rootElectron.getMomentum()[2],2),0.5)
+
+			# hcal sim hits
+			self.b_RminRhcalSimHit[0] = 999999999.
+			self.b_ZminRhcalSimHit[0] = 999999999.
+			for hit in self.hcalSimHits : 
+				if hit.getEdep()<1.0 : continue
+				#print "hit position (x,y,z)",hit.getPosition()[0],hit.getPosition()[1],hit.getPosition()[2]
+				r = pow(pow(hit.getPosition()[0],2)+pow(hit.getPosition()[1],2),0.5)
+				#print "r",r
+				if r < self.b_RminRhcalSimHit[0] :
+					self.b_RminRhcalSimHit[0] = r
+					self.b_ZminRhcalSimHit[0] = hit.getPosition()[2]
+					self.b_EminRhcalSimHit[0] = hit.getEdep()
+
 			self.tout.Fill();
 
 		print "\n";
