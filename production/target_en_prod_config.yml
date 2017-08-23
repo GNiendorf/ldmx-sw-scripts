@@ -1,0 +1,5 @@
+Jobs: 1000
+Script: /nfs/slac/g/ldmx/production/scripts/run_target_en.py
+Output: 4pt0_gev_e_target_en_v3_magnet
+Detector: ldmx-det-full-v3-fieldmap-magnet
+Path: /nfs/slac/g/ldmx/production
