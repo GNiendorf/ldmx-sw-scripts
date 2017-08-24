@@ -1,0 +1,5 @@
+Jobs: 1000
+Script: /nfs/slac/g/ldmx/production/scripts/run_ecal_pn.py
+Output: 4pt0_gev_e_ecal_pn_v3_magnet_20170818
+Detector: ldmx-det-full-v3-fieldmap-magnet
+Path: /nfs/slac/g/ldmx/production

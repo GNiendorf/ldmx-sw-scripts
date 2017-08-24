@@ -1,0 +1,4 @@
+FileList: /nfs/slac/g/ldmx/production/scripts/signal.in 
+Script: /nfs/slac/g/ldmx/production/scripts/run_lhe_files.py
+Detector: ldmx-det-full-v3-fieldmap-magnet
+Path: /nfs/slac/g/ldmx/production
