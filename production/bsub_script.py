@@ -31,7 +31,11 @@ def main():
     jobs = int(config['Jobs'])
     print '[ BSUB ] Submitting %s jobs.' % jobs
    
-    command = ['bash', '-c', 'source /nfs/slac/g/ldmx/software/setup.sh && env']
+    env_script = '/nfs/slac/g/ldmx/software/setup.sh'
+    if 'EnvScript' in config: env_script = config['EnvScript'].strip()
+    print '[ BSUB ] Environment script = %s' % env_script
+
+    command = ['bash', '-c', 'source %s && env' % (env_script)]
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
 
     for line in proc.stdout: 
@@ -53,7 +57,7 @@ def main():
         print 'Log path: %s' % log_path
 
         command = 'python %s -d %s -p %s -o %s' % (run_script, detector, path, output_path)
-        batch_command = "bsub -q medium -W 2800 %s" % command
+        batch_command = "bsub -q medium -o %s -W 2800 %s" % (log_path,command)
         #batch_command = command
         #print batch_command
         
