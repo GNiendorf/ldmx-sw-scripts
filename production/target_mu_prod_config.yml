@@ -1,6 +1,6 @@
-Jobs: 1
+Jobs: 200
 Script: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/production/run_target_muon.py
 Output: ntran_4pt0_gev_e_target_muon_v3_magnet_20170818
 Detector: ldmx-det-full-v3-fieldmap-magnet
-Path: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/output
+Path: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/prod_20170818
 EnvScript: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/production/setupForMuons.sh
