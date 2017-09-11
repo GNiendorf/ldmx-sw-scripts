@@ -43,7 +43,7 @@ def generate_macro(output_path):
     macro_file.write('/gun/direction 0. 0. 4.0 GeV\n')    
 
     macro_file.write('/ldmx/plugins/load EventPrintPlugin\n')
-    macro_file.write('/ldmx/plugins/EventPrintPlugin/modulus 1000\n')
+    macro_file.write('/ldmx/plugins/EventPrintPlugin/modulus 10000\n')
 
     # target filter
     macro_file.write('/ldmx/plugins/load TargetBremFilter libBiasing.so\n')
@@ -64,7 +64,7 @@ def generate_macro(output_path):
     macro_file.write('/ldmx/persistency/root/verbose 1\n')
     macro_file.write('/ldmx/persistency/root/file ' + output_path + '.root\n')
     macro_file.write('/random/setSeeds %s %s\n' % (seed1, seed2)) 
-    macro_file.write('/run/beamOn 500000\n') 
+    macro_file.write('/run/beamOn 2000000\n') 
     # macro_file.write('/run/beamOn 1000\n') 
     macro_file.close()
 

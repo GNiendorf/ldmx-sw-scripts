@@ -9,8 +9,6 @@ from array import array
 from optparse import OptionParser
 sys.path.insert(0, '../')
 
-r.gROOT.ProcessLine('.L Loader.C+')
-
 ######################################################################
 class sampleContainer:
 
@@ -88,7 +86,7 @@ class sampleContainer:
 		self.tout.Branch("bEcalNoVeto",self.b_bEcalNoVeto,"bEcalNoVeto/F");
 		self.tout.Branch("bTkNoVeto",self.b_bTkNoVeto,"bTkNoVeto/F");
 
-		self.tout.Branch("ecalV_LongestMipTrack",self.b_ecalV_LongestMipTrack,"ecalV_LongestMipTrack/F")
+		# self.tout.Branch("ecalV_LongestMipTrack",self.b_ecalV_LongestMipTrack,"ecalV_LongestMipTrack/F")
 		self.tout.Branch("ecalV_NMipTracks",self.b_ecalV_NMipTracks,"ecalV_NMipTracks/F")
 		self.tout.Branch("ecalV_SummedDet",self.b_ecalV_SummedDet,"ecalV_SummedDet/F")
 		self.tout.Branch("ecalV_SummedIso",self.b_ecalV_SummedIso,"ecalV_SummedIso/F")
@@ -154,11 +152,11 @@ class sampleContainer:
 			# ecal veto info
 			if self.ecalVetoRes[0].passesVeto(): self.b_bEcalNoVeto[0] = 1.;
 			else: self.b_bEcalNoVeto[0] = 0.;
-			self.b_ecalV_LongestMipTrack[0] = self.ecalVetoRes[0].getLongestMipTrack();
-			self.b_ecalV_NMipTracks[0] = self.ecalVetoRes[0].getNMipTracks();
-			self.b_ecalV_SummedDet[0] = self.ecalVetoRes[0].getSummedDet();
-			self.b_ecalV_SummedIso[0] = self.ecalVetoRes[0].getSummedIso();
-			self.b_ecalV_SummedOuter[0] = self.ecalVetoRes[0].getSummedOuter();
+			# self.b_ecalV_LongestMipTrack[0] = self.ecalVetoRes[0].getLongestMipTrack();
+			# self.b_ecalV_NMipTracks[0] = self.ecalVetoRes[0].getNMipTracks();
+			# self.b_ecalV_SummedDet[0] = self.ecalVetoRes[0].getSummedDet();
+			# self.b_ecalV_SummedIso[0] = self.ecalVetoRes[0].getSummedIso();
+			# self.b_ecalV_SummedOuter[0] = self.ecalVetoRes[0].getSummedOuter();
 
 			# track info
 			ntracks = 0.;
@@ -176,16 +174,21 @@ class sampleContainer:
 
 			# hcal veto info
 			b_hcalvetoed = False;
+			nhcalhits = 0;
 			for ih,hit in enumerate(self.hcalHits):
 				#print hit.getPE(), hit.getLayer();
+				nhcalhits+=1;
+				# print hit.getPE();
 				if hit.getPE() >= 8: 
 					b_hcalvetoed = True;
-					break;				
-			if b_hcalvetoed: 
-				self.b_bHcalNoVeto[0] = 0.;
+					break;	
+			# print "number of hcal hits = ", nhcalhits			
+
+			if not b_hcalvetoed: 
+				self.b_bHcalNoVeto[0] = 1.;
 				self.b_nHcalHits[0] = 0.;
 			else: 
-				self.b_bHcalNoVeto[0] = 1.;
+				self.b_bHcalNoVeto[0] = 0.;
 				self.b_nHcalHits[0] = float(self.hcalHits.GetEntries());
 				for ih,hit in enumerate(self.hcalHits):
 					self.b_vHcalLayer.push_back( hit.getLayer() );
@@ -320,7 +323,6 @@ if __name__ == "__main__":
 	parser.add_option('-o','--ofile', dest='ofile', default = 'ofile.root',help='directory to write plots', metavar='odir')
 	parser.add_option('--swdir', dest='swdir', default = '/u/ey/ntran/ldmx/biasing/iss94/ldmx-sw',help='directory to write plots', metavar='odir')
 	parser.add_option('--tag', dest='tag', default = '1',help='file tag', metavar='tag')
-	parser.add_option('--pseudo', action='store_true', dest='pseudo', default =False,help='data = MC', metavar='isData')
 
 	(options, args) = parser.parse_args()
 
@@ -335,6 +337,6 @@ if __name__ == "__main__":
 	r.gROOT.SetBatch()
 
 	# Get the Event library 
-	r.gSystem.Load(options.swdir+"/lib/libEvent.so");	
+	r.gSystem.Load("/u/ey/ntran/ldmx/dev/muons/officialv3/ldmx-sw/install/lib/libEvent.so");	
 
 	main(options,args);
