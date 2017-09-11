@@ -32,7 +32,7 @@ def main(options,args):
 		os.system('rm -r %s' % subdir)
 		os.makedirs(subdir)
 	
-	os.system('tar -cvzf inputs.tar.gz gammaMuAnalyzer.py ../tdrstyle.py Loader.C');	
+	os.system('tar -cvzf inputs.tar.gz gammaMuAnalyzer.py tdrstyle.py Loader.C');	
 	os.system('mv inputs.tar.gz %s/.' % (subdir))
 	os.chdir(subdir);
 
@@ -52,7 +52,7 @@ def main(options,args):
 		f1.write('pwd \n');
 		f1.write('tar -xvzf inputs.tar.gz \n');
 		f1.write('ls -l \n');
-		f1.write("python gammaMuAnalyzer.py -b -i %s.root -o ana_%s.root --swdir %s --tag %i \n" % (fn,fn,swdir,i));
+		f1.write("python gammaMuAnalyzer.py -b -i %s.root -o ana_%s.root --tag %i \n" % (fn,fn,i));
 		f1.write("mv ana_%s.root ${LSB_OUTDIR}/ana_%i_%s.root \n" % (fn,i,fn));
 		f1.close();
 
@@ -66,9 +66,9 @@ if __name__ == '__main__':
 	
 	parser = OptionParser()
 	parser.add_option('-b', action='store_true', dest='noX', default=False, help='no X11 windows')
-	parser.add_option("--lumi", dest="lumi", type=float, default = 30,help="luminosity", metavar="lumi")
+	# parser.add_option("--lumi", dest="lumi", type=float, default = 30,help="luminosity", metavar="lumi")
 	parser.add_option('-i','--idir', dest='idir', default = 'data/',help='directory with data', metavar='idir')
-	parser.add_option('-o','--odir', dest='odir', default = 'plots/',help='directory to write plots', metavar='odir')
+	# parser.add_option('-o','--odir', dest='odir', default = 'plots/',help='directory to write plots', metavar='odir')
 	parser.add_option('--subdir'            ,    dest='subdir'             , help='directory from which you submit' , default='tmp_condor')
 	parser.add_option('--swdir'            ,    dest='swdir'             , help='directory from which you submit' , default='/uscms_data/d2/ntran/physics/LDMX/FullFramework/go9/ldmx-sw')
 	parser.add_option('-S', '--no-submit'    ,    action="store_true"       ,  dest='nosubmit'           , help='Do not submit batch job.')
