@@ -3,6 +3,7 @@ import os,sys
 import optparse
 import commands
 import math
+import time
 import random
 from optparse import OptionParser
 
@@ -53,11 +54,13 @@ def main(options,args):
 		f1.write('tar -xvzf inputs.tar.gz \n');
 		f1.write('ls -l \n');
 		f1.write("python gammaMuAnalyzer.py -b -i %s.root -o ana_%s.root --tag %i \n" % (fn,fn,i));
-		f1.write("mv ana_%s.root ${LSB_OUTDIR}/ana_%i_%s.root \n" % (fn,i,fn));
+		f1.write("mv *ana_%s.root ${LSB_OUTDIR}/. \n" % (fn));
 		f1.close();
 
 		command = 'bsub -q short -o olog_%s.log < tmp_%i_%s.sh' % (fn,i,fn);
-		if not options.nosubmit: os.system(command);
+		if not options.nosubmit: 
+			os.system(command);
+			time.sleep(0.25);
 
 	# os.chdir("../.");
 
