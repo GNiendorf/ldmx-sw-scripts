@@ -14,14 +14,17 @@ class sampleContainer:
 
 	def __init__(self, fn, ofn, tag):
 
-		print "Hello In!"
 		self.fin = r.TFile(fn);
 		self.tin = self.fin.Get("LDMX_Events")
-		self.nHCalLayers = 50;
+		# self.nHCalLayers = 50;
 		self.tag = int(tag);
 
 		self.fn_out = ofn;
-		self.fout = r.TFile(self.fn_out,"RECREATE");
+		self.fout = r.TFile("hist_"+self.fn_out,"RECREATE");
+
+		self.fn_sklim = ofn;
+		self.fsklim = r.TFile("sklim_"+self.fn_sklim,"RECREATE");
+		self.tsklim = self.tin.CloneTree(0);
 
 		self.evHeader = r.ldmx.EventHeader()
 		self.trigRes = r.TClonesArray('ldmx::TriggerResult')
@@ -42,123 +45,102 @@ class sampleContainer:
 		self.tin.SetBranchAddress("EcalVeto_recon",  r.AddressOf( self.ecalVetoRes ));
 		self.tin.SetBranchAddress("FindableTracks_recon",  r.AddressOf( self.trackRes ));
 
-		#self.tin.SetBranchStatus("*sim*",0);
+		self.ecalSPHits = r.TClonesArray('ldmx::SimTrackerHit');
+		self.tin.SetBranchAddress("EcalScoringPlaneHits_sim",  r.AddressOf( self.ecalSPHits ));
 
-		# results
-		self.tout = r.TTree("otree","otree");
-		self.b_itag = array('i',[0]);
-		self.b_bTrig = array('f',[0.]);
-		self.b_bMuons = array('f',[0.]);
-		self.b_bHcalNoVeto = array('f',[0.]);
-		self.b_bEcalNoVeto = array('f',[0.]);
-		self.b_bTkNoVeto = array('f',[0.]);
-		
-		self.b_ecalV_LongestMipTrack = array('f',[0.]);
-		self.b_ecalV_NMipTracks = array('f',[0.]);
-		self.b_ecalV_SummedDet = array('f',[0.]);
-		self.b_ecalV_SummedIso = array('f',[0.]);
-		self.b_ecalV_SummedOuter = array('f',[0.]);
+		# histograms
+		self.histograms = {};
+		## counting histograms
+		self.histograms["b_total"]    = r.TH1F("b_total","; event bit; N", 2, -0.5, 1.5);
+		self.histograms["b_trig"]     = r.TH1F("b_trig","; trigger bit; N", 2, -0.5, 1.5);
+		self.histograms["b_hcalVeto"] = r.TH1F("b_hcalVeto","; hcal veto; N", 2, -0.5, 1.5);
+		self.histograms["b_ecalVeto"] = r.TH1F("b_ecalVeto","; ecal veto; N", 2, -0.5, 1.5);
+		self.histograms["b_trckVeto"] = r.TH1F("b_trckVeto","; trck veto; N", 2, -0.5, 1.5);
+		self.histograms["b_hcalOrtrackVeto"] = r.TH1F("b_hcalOrtrackVeto","; hcal or track veto; N", 2, -0.5, 1.5);
 
-		self.b_nTrack = array('f',[0.]);
-		self.b_nTrack_4s = array('f',[0.]);
-		self.b_nTrack_3s1a = array('f',[0.]);
-		self.b_nMuons = array('f',[0.]);
-		
-		self.b_vMuonE = r.std.vector('float')();
-		self.b_vMuonTh = r.std.vector('float')();
-
-		self.b_nHcalHits = array('f',[0.]);
-		self.b_vHcalLayer = r.std.vector('float')();
-		self.b_vHcalLayerPE = r.std.vector('float')();
-
-		self.b_muonPhotonQ = array('f',[0.]);
-		self.b_muonElectronQ = array('f',[0.]);
-		self.b_photonElectronQ = array('f',[0.]);
-
-		self.b_RminRhcalSimHit = array('f',[0.]);
-		self.b_ZminRhcalSimHit = array('f',[0.]);
-		self.b_EminRhcalSimHit = array('f',[0.]);
-
-		self.tout.Branch("tag",self.b_itag,"tag/I");
-		self.tout.Branch("bTrig",self.b_bTrig,"bTrig/F");
-		self.tout.Branch("bMuons",self.b_bMuons,"bMuons/F");
-		self.tout.Branch("bHcalNoVeto",self.b_bHcalNoVeto,"bHcalNoVeto/F");
-		self.tout.Branch("bEcalNoVeto",self.b_bEcalNoVeto,"bEcalNoVeto/F");
-		self.tout.Branch("bTkNoVeto",self.b_bTkNoVeto,"bTkNoVeto/F");
-
-		# self.tout.Branch("ecalV_LongestMipTrack",self.b_ecalV_LongestMipTrack,"ecalV_LongestMipTrack/F")
-		self.tout.Branch("ecalV_NMipTracks",self.b_ecalV_NMipTracks,"ecalV_NMipTracks/F")
-		self.tout.Branch("ecalV_SummedDet",self.b_ecalV_SummedDet,"ecalV_SummedDet/F")
-		self.tout.Branch("ecalV_SummedIso",self.b_ecalV_SummedIso,"ecalV_SummedIso/F")
-		self.tout.Branch("ecalV_SummedOuter",self.b_ecalV_SummedOuter,"ecalV_SummedOuter/F")
-
-		self.tout.Branch("nTrack",self.b_nTrack,"nTrack/F");
-		self.tout.Branch("nTrack_4s",self.b_nTrack_4s,"nTrack_4s/F");
-		self.tout.Branch("nTrack_3s1a",self.b_nTrack_3s1a,"nTrack_3s1a/F");
-		
-		self.tout.Branch("nMuons",self.b_nMuons,"nMuons/F");
-		self.tout.Branch("muonE",self.b_vMuonE);
-		self.tout.Branch("muonTh",self.b_vMuonTh);
-
-		self.tout.Branch("nHcalHits",self.b_nHcalHits,"nHcalHits/F");
-		self.tout.Branch("hcalLayer",self.b_vHcalLayer);
-		self.tout.Branch("hcalLayerPE",self.b_vHcalLayerPE);
-
-		self.tout.Branch("muonPhotonQ",self.b_muonPhotonQ,"muonPhotonQ/F");
-		self.tout.Branch("muonElectronQ",self.b_muonElectronQ,"muonElectronQ/F");
-		self.tout.Branch("photonElectronQ",self.b_photonElectronQ,"photonElectronQ/F");
-
-		self.tout.Branch("RminRhcalSimHit",self.b_RminRhcalSimHit,"RminRhcalSimHit/F");
-		self.tout.Branch("ZminRhcalSimHit",self.b_ZminRhcalSimHit,"ZminRhcalSimHit/F");
-		self.tout.Branch("EminRhcalSimHit",self.b_EminRhcalSimHit,"EminRhcalSimHit/F");
-
-		self.hs_evDisp_Trig_NoHCalVeto_HasMuons = [];
+		## ecal sim info
+		self.histograms["f_edeptot_ecal"] = r.TH1F("f_edeptot_ecal","; ECAL e dep; N", 50, 0, 150);
+		self.histograms["f_zavgeweight_ecal"] = r.TH1F("f_zavgeweight_ecal","; z position (E-weighted); N", 50, 200, 500);
+		self.histograms["f_edeptot_ecal__nohcalveto"] = r.TH1F("f_edeptot_ecal__nohcalveto","; ECAL e dep; N", 50, 0, 150);
+		self.histograms["f_zavgeweight_ecal__nohcalveto"] = r.TH1F("f_zavgeweight_ecal__nohcalveto","; z position (E-weighted); N", 50, 200, 500);
+		## hcal sim info
+		self.histograms["f_minhcalsimhit_xy"] = r.TH2F("f_minhcalsimhit_xy",";x pos;y pos",100,-1600,1600,100,-1600,1600);
+		self.histograms["f_minhcalsimhit_rz"] = r.TH2F("f_minhcalsimhit_rz",";r pos;z pos",100,0,4500,100,0,3500);
+		# track "reconstruction"
+		self.histograms["f_ntracks"] = r.TH1F("f_ntracks",";n tracks;N",10,0,10);
+		self.histograms["f_ntracks__nohcalveto"] = r.TH1F("f_ntracks__nohcalveto",";n tracks;N",10,0,10);
+		# hcal reconstruction
+		self.histograms["f_nhcalhits"] = r.TH1F("f_nhcalhits",";n tracks;N",50,0,200);
+		self.histograms["f_hcalhitPEs"] = r.TH1F("f_hcalhitPEs",";n tracks;N",50,0,50);
+		## gen information
+		# inclusive
+		# not vetoed by hcal
 
 		self.loop();
 		self.writeOutHistos();
 
 	def writeOutHistos(self):
 
-		for h in self.hs_evDisp_Trig_NoHCalVeto_HasMuons: h.Write();
-
-		self.tout.Write();
+		self.fout.cd();
+		for key in self.histograms: 
+			print key
+			self.histograms[key].Write();
 		self.fout.Close();
+
+		self.fsklim.cd();
+		self.tsklim.Write();
+		self.fsklim.Close();
 
 	####################################################
 	### looping 
 	####################################################
 	def loop(self):
 
-		self.b_itag[0] = self.tag;
+		# self.b_itag[0] = self.tag;
 		nent = self.tin.GetEntriesFast();
 		print "nent = ", nent
 		for i in range(nent):
-
+			print("---",i);
 			if(nent/100 > 0 and i % (1 * nent/100) == 0):
 				sys.stdout.write("\r[" + "="*int(20*i/nent) + " " + str(round(100.*i/nent,0)) + "% done")
 				sys.stdout.flush()
 	
 			self.tin.GetEntry(i);
-			# clear vectors
-			self.b_vMuonE.clear();
-			self.b_vMuonTh.clear();
-			self.b_vHcalLayer.clear();
-			self.b_vHcalLayerPE.clear();
+			
+			# event weight
+			ew = 1./self.evHeader.getWeight();
+			# ew = 1.;
+			self.histograms["b_total"].Fill(1.,ew);
 
 			# trigger info
-			if self.trigRes[0].passed(): self.b_bTrig[0] = 1.;
-			else: self.b_bTrig[0] = 0.;
+			if self.trigRes[0].passed(): self.histograms["b_trig"].Fill(1.,ew);
+			else:                        self.histograms["b_trig"].Fill(0.,ew);
+
+			# ----------------------------------------------------------------------
+			# the rest of the information is saved only if the trigger is passed
+			if not self.trigRes[0].passed(): continue;
 
 			# ecal veto info
-			if self.ecalVetoRes[0].passesVeto(): self.b_bEcalNoVeto[0] = 1.;
-			else: self.b_bEcalNoVeto[0] = 0.;
-			# self.b_ecalV_LongestMipTrack[0] = self.ecalVetoRes[0].getLongestMipTrack();
-			# self.b_ecalV_NMipTracks[0] = self.ecalVetoRes[0].getNMipTracks();
-			# self.b_ecalV_SummedDet[0] = self.ecalVetoRes[0].getSummedDet();
-			# self.b_ecalV_SummedIso[0] = self.ecalVetoRes[0].getSummedIso();
-			# self.b_ecalV_SummedOuter[0] = self.ecalVetoRes[0].getSummedOuter();
+			if self.ecalVetoRes[0].passesVeto(): self.histograms["b_ecalVeto"].Fill(1.,ew);
+			else:                                self.histograms["b_ecalVeto"].Fill(0.,ew);
 
-			# track info
+			# # ecal sim info
+			necalsimhits = 0;
+			totale_ecalsimhits = 0;
+			eweightedz = 0;
+			for ih,h in enumerate(self.ecalSimHits):
+				# print h.getEdep();
+				necalsimhits+=1;
+				totale_ecalsimhits += h.getEdep();
+				eweightedz += h.getEdep()*h.getPosition()[2];
+			# print "number of ecal sim hits and total energy = ", necalsimhits, totale_ecalsimhits
+			eweightedz /= totale_ecalsimhits;
+			self.histograms["f_edeptot_ecal"].Fill(totale_ecalsimhits);
+			self.histograms["f_zavgeweight_ecal"].Fill(eweightedz);
+			print "totale_ecalsimhits = ", totale_ecalsimhits
+			print "eweightedz = ", eweightedz
+
+			# # track info
 			ntracks = 0.;
 			ntracks_4s = 0.;
 			ntracks_3s1a = 0.;
@@ -166,112 +148,54 @@ class sampleContainer:
 				if t.is4sFindable(): ntracks_4s += 1;
 				if t.is3s1aFindable(): ntracks_3s1a += 1;
 				if t.is4sFindable() or t.is3s1aFindable(): ntracks += 1;
-			self.b_nTrack[0] = ntracks;
-			self.b_nTrack_4s[0] = ntracks_4s;
-			self.b_nTrack_3s1a[0] = ntracks_3s1a;
-			if ntracks <= 1: self.b_bTkNoVeto[0] = 1.;
-			else: self.b_bTkNoVeto[0] = 0.;
+			self.histograms["f_ntracks"].Fill(ntracks);
+			if ntracks <= 1: self.histograms["b_trckVeto"].Fill(0.);
+			else:            self.histograms["b_trckVeto"].Fill(1.);
+			print "ntracks = ",ntracks
 
 			# hcal veto info
-			b_hcalvetoed = False;
+			b_hcalvetoed = 0;
 			nhcalhits = 0;
 			for ih,hit in enumerate(self.hcalHits):
-				#print hit.getPE(), hit.getLayer();
 				nhcalhits+=1;
-				# print hit.getPE();
-				if hit.getPE() >= 8: 
-					b_hcalvetoed = True;
-					break;	
-			# print "number of hcal hits = ", nhcalhits			
+				if hit.getPE() >= 8: b_hcalvetoed = 1;				
+				self.histograms["f_hcalhitPEs"].Fill(hit.getPE());
+			self.histograms["b_hcalVeto"].Fill( b_hcalvetoed );
+			self.histograms["f_nhcalhits"].Fill(nhcalhits);
 
-			if not b_hcalvetoed: 
-				self.b_bHcalNoVeto[0] = 1.;
-				self.b_nHcalHits[0] = 0.;
-			else: 
-				self.b_bHcalNoVeto[0] = 0.;
-				self.b_nHcalHits[0] = float(self.hcalHits.GetEntries());
-				for ih,hit in enumerate(self.hcalHits):
-					self.b_vHcalLayer.push_back( hit.getLayer() );
-					self.b_vHcalLayerPE.push_back( hit.getPE() );
+			if b_hcalvetoed == 0:
+				self.histograms["f_edeptot_ecal__nohcalveto"].Fill(totale_ecalsimhits);
+				self.histograms["f_zavgeweight_ecal__nohcalveto"].Fill(eweightedz);
+				self.histograms["f_ntracks__nohcalveto"].Fill(ntracks);
+				self.tsklim.Fill(); # sklimming!!
+
+			if b_hcalvetoed == 1:
+				# hcal simhit info
+				minr = 1e8;
+				minz = 1e8;
+				minx = 1e8;
+				miny = 1e8;
+				for ih,h in enumerate(self.hcalSimHits):
+					if h.getEdep() > 1.0:
+						curx = h.getPosition()[0];
+						cury = h.getPosition()[1];
+						curz = h.getPosition()[2];
+						curr = math.sqrt(curx*curx + cury*cury);
+						if curr < minr: 
+							minr = curr; minx = curx; miny = cury; minz = curz;
+				self.histograms["f_minhcalsimhit_xy"].Fill( minx, miny );
+				self.histograms["f_minhcalsimhit_rz"].Fill( minz, minr );
+
+			if ntracks <= 1 and b_hcalvetoed == 0: self.histograms["b_hcalOrtrackVeto"].Fill(0.);
+			else                                 : self.histograms["b_hcalOrtrackVeto"].Fill(1.);
+
+			print "xpos \t y pos \t z pos \t simpdgid \t simE \t id \t px \t py \t pz";
+			for ih,h in enumerate(self.ecalSPHits):
+				print "%0.1f \t %0.1f \t %0.1f \t %i \t %0.4f \t %i \t %0.2f \t %0.2f \t %0.2f" % (h.getPosition()[0], h.getPosition()[1], h.getPosition()[2], h.getSimParticle().getPdgID(), h.getSimParticle().getEnergy(), h.getID(), h.getMomentum()[0], h.getMomentum()[1], h.getMomentum()[2]);
+
+			# if i > 200: break;
 			
-			if not b_hcalvetoed and self.trigRes[0].passed():
-				print "\n HCAL NOT VETOED Warning!", i
-				nmuons=0
-				for ip,par in enumerate(self.simParticles):
-					if math.fabs(par.getPdgID()) == 13: 
-						nmuons += 1;
-						px = par.getMomentum()[0]
-						py = par.getMomentum()[1]
-						pz = par.getMomentum()[2]
-						theta = math.atan2(math.sqrt(px*px + py*py),pz) * 180/3.1415
-						print "NOT VETOED event -- muon ",nmuons,", e = ", par.getEnergy(), ", th = ", theta;	
-				for ip,par in enumerate(self.simParticles):
-					px = par.getMomentum()[0]
-					py = par.getMomentum()[1]
-					pz = par.getMomentum()[2]
-					theta = math.atan2(math.sqrt(px*px + py*py),pz) * 180/3.1415
-					print "NOT VETOED event -- particle ",par.getPdgID(),", e = %.2f, px,py,pz = %.2f,%.2f,%.2f" % (par.getEnergy(),px,py,pz);							
-				print "\n";
-
-			# muon info
-			nmuons = 0.;
-			for ip,par in enumerate(self.simParticles):
-				if math.fabs(par.getPdgID()) == 13: 
-					nmuons += 1;
-					self.b_vMuonE.push_back( par.getEnergy() );
-					px = par.getMomentum()[0]
-					py = par.getMomentum()[1]
-					pz = par.getMomentum()[2]
-					theta = math.atan2(math.sqrt(px*px + py*py),pz) * 180/3.1415
-					self.b_vMuonTh.push_back( theta );
-
-			self.b_nMuons[0] = nmuons;
-			if nmuons > 0: self.b_bMuons[0] = 1.;
-			else: self.b_bMuons[0] = 0.;
-				
-			# Q^2 info
-			rootElectron=None
-			radiatedPhoton=None
-			ConvMuonPlus=None
-			ConvMuonMinus=None
-			self.b_muonPhotonQ[0]=0.
-			self.b_muonElectronQ[0]=0.
-			self.b_photonElectronQ[0]=0.
-			for p in self.simParticles :
-				if p.getParentCount() != 0 : continue
-				rootElectron = p
-				for daughterIndex in range(p.getDaughterCount()) :
-					daughter = p.getDaughter(daughterIndex)
-					if daughter.getDaughterCount() == 2 and abs(daughter.getDaughter(0).getPdgID()) == 13 and abs(daughter.getDaughter(1).getPdgID()) == 13 :
-						radiatedPhoton = daughter
-						if( daughter.getDaughter(0).getPdgID() == 13 ):
-							ConvMuonMinus = daughter.getDaughter(0)
-							ConvMuonPlus = daughter.getDaughter(1)
-						else : 
-							ConvMuonMinus = daughter.getDaughter(1)
-							ConvMuonPlus = daughter.getDaughter(0)
-
-			if rootElectron!=None and radiatedPhoton!=None and ConvMuonPlus!=None and ConvMuonMinus!=None : 
-				self.b_muonPhotonQ[0] = pow(pow(ConvMuonMinus.getMomentum()[0]+ConvMuonPlus.getMomentum()[0]-radiatedPhoton.getMomentum()[0],2)+pow(ConvMuonMinus.getMomentum()[1]+ConvMuonPlus.getMomentum()[1]-radiatedPhoton.getMomentum()[1],2)+pow(ConvMuonMinus.getMomentum()[2]+ConvMuonPlus.getMomentum()[2]-radiatedPhoton.getMomentum()[2],2),.5)
-
-				self.b_muonElectronQ[0] = pow(pow(ConvMuonMinus.getMomentum()[0]+ConvMuonPlus.getMomentum()[0]-rootElectron.getMomentum()[0],2)+pow(ConvMuonMinus.getMomentum()[1]+ConvMuonPlus.getMomentum()[1]-rootElectron.getMomentum()[1],2)+pow(ConvMuonMinus.getMomentum()[2]+ConvMuonPlus.getMomentum()[2]-rootElectron.getMomentum()[2],2),.5)
-				
-				self.b_photonElectronQ[0] = pow(pow(radiatedPhoton.getMomentum()[0]-rootElectron.getMomentum()[0],2)+pow(radiatedPhoton.getMomentum()[2]-rootElectron.getMomentum()[2],2)+pow(radiatedPhoton.getMomentum()[2]-rootElectron.getMomentum()[2],2),0.5)
-
-			# hcal sim hits
-			self.b_RminRhcalSimHit[0] = 999999999.
-			self.b_ZminRhcalSimHit[0] = 999999999.
-			for hit in self.hcalSimHits : 
-				if hit.getEdep()<1.0 : continue
-				#print "hit position (x,y,z)",hit.getPosition()[0],hit.getPosition()[1],hit.getPosition()[2]
-				r = pow(pow(hit.getPosition()[0],2)+pow(hit.getPosition()[1],2),0.5)
-				#print "r",r
-				if r < self.b_RminRhcalSimHit[0] :
-					self.b_RminRhcalSimHit[0] = r
-					self.b_ZminRhcalSimHit[0] = hit.getPosition()[2]
-					self.b_EminRhcalSimHit[0] = hit.getEdep()
-
-			self.tout.Fill();
+			# self.tout.Fill();
 
 		print "\n";
 
