@@ -60,7 +60,7 @@ def main(options,args):
 		command = 'bsub -q short -o olog_%s.log < tmp_%i_%s.sh' % (fn,i,fn);
 		if not options.nosubmit: 
 			os.system(command);
-			time.sleep(0.25);
+			time.sleep(0.2);
 
 	# os.chdir("../.");
 
