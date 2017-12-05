@@ -25,10 +25,10 @@ def main():
     for file_name in os.listdir(args.path):
 
         # Strip the hex string from the file
-        name = file_name[:file_name.rfind('_') + 1] 
+        name = file_name[:file_name.rfind('2017') + 9] 
 
         # Add a file number to the remaining file prefix
-        name += str(counter).zfill(6) + ".root"
+        name += str(counter).zfill(6) + "_tskim_recon.root"
 
         # Rename the file
         print "Renaming %s ---> %s" % (colored('%s/%s' % (args.path, file_name), 'red'),
