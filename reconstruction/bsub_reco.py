@@ -41,28 +41,35 @@ def main():
 
     proc.communicate()
 
-    #detector = config['Detector'].strip()
-    run_script = config['Script'].strip()
-    config_tpl = config['RecoConfig'].strip()
-    input_prefix = config['InputPath'].strip()
+    run_script    = config['Script'].strip()
+    config_tpl    = config['RecoConfig'].strip()
+    input_prefix  = config['InputPath'].strip()
     output_prefix = config['OutputPath'].strip()
+    step_size     = config['StepSize']
 
     if not os.path.exists(output_prefix):
         os.makedirs(output_prefix)
 
     files = [f for f in os.listdir(input_prefix) if ".root" in f]
-    for i,f in enumerate(files): 
+    print "number of files: ", len(files)
+    for i in range(0, len(files), step_size):
         
-        input_file = "%s/%s" % (input_prefix,f)
+        input_files = "\'"
+        for j in range(i, i+step_size, 1):
+            if j < len(files): input_files += " %s/%s" % (input_prefix, files[j]);
+        input_files += "\'"
+
         #log_path = '%s/reco_%s.log' % (output_prefix, f.split(".")[0])
         log_path = 'log_reco_%s.log' % (f.split(".")[0])
-        command = 'python %s -o %s -c %s -i %s' % (run_script, output_prefix, config_tpl, input_file)
+        command = 'python %s -o %s -c %s -i %s' % (run_script, output_prefix, config_tpl, input_files)
         batch_command = "bsub -q medium -o %s -W 2800 %s" % (log_path,command)
         # print command
-        print batch_command
+        # print batch_command
 
         subprocess.Popen(batch_command, shell=True).wait()
-        time.sleep(1)
+        time.sleep(0.1)
+
+        if i > 1: break; #for testing
 
 if __name__ == "__main__" : 
     main()
