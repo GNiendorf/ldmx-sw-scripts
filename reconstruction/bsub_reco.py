@@ -69,7 +69,7 @@ def main():
         subprocess.Popen(batch_command, shell=True).wait()
         time.sleep(0.1)
 
-        if i > 1: break; #for testing
+        #if i > 1: break; #for testing
 
 if __name__ == "__main__" : 
     main()
