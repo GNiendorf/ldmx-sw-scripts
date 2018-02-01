@@ -1,3 +1,3 @@
-# ldmx-sw-lpcscripts
+# ldmx-sw-scripts
 
 
