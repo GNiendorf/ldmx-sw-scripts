@@ -46,6 +46,7 @@ def main():
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
     
+    os.system("cp cal_bdt.pkl %s/." % (tmp_dir) )
     os.chdir(tmp_dir)
    
     config_path = generate_macro(args.configfile,args.inputfile,args.outputpath,scratch_dir)

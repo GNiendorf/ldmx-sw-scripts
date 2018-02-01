@@ -36,14 +36,14 @@ class sampleContainer:
 		self.ecalVetoRes = r.TClonesArray('ldmx::EcalVetoResult');
 		self.trackRes    = r.TClonesArray('ldmx::FindableTrackResult');
 		self.tin.SetBranchAddress("EventHeader",  r.AddressOf( self.evHeader ));
-		self.tin.SetBranchAddress("Trigger_skim",  r.AddressOf( self.trigRes ));
+		self.tin.SetBranchAddress("Trigger_reco",  r.AddressOf( self.trigRes ));
 		self.tin.SetBranchAddress("SimParticles_sim",  r.AddressOf( self.simParticles ));
 		self.tin.SetBranchAddress("EcalSimHits_sim",  r.AddressOf( self.ecalSimHits ));
 		self.tin.SetBranchAddress("HcalSimHits_sim",  r.AddressOf( self.hcalSimHits ));
-		self.tin.SetBranchAddress("hcalDigis_skim",  r.AddressOf( self.hcalHits ));
-		self.tin.SetBranchAddress("ecalDigis_skim",  r.AddressOf( self.ecalHits ));
-		self.tin.SetBranchAddress("EcalVeto_skim",  r.AddressOf( self.ecalVetoRes ));
-		self.tin.SetBranchAddress("FindableTracks_skim",  r.AddressOf( self.trackRes ));
+		self.tin.SetBranchAddress("hcalDigis_reco",  r.AddressOf( self.hcalHits ));
+		self.tin.SetBranchAddress("ecalDigis_reco",  r.AddressOf( self.ecalHits ));
+		self.tin.SetBranchAddress("EcalVeto_reco",  r.AddressOf( self.ecalVetoRes ));
+		self.tin.SetBranchAddress("FindableTracks_reco",  r.AddressOf( self.trackRes ));
 
 		self.ecalSPHits = r.TClonesArray('ldmx::SimTrackerHit');
 		self.tin.SetBranchAddress("EcalScoringPlaneHits_sim",  r.AddressOf( self.ecalSPHits ));
@@ -67,14 +67,18 @@ class sampleContainer:
 		self.histograms["f_minhcalsimhit_xy"] = r.TH2F("f_minhcalsimhit_xy",";x pos;y pos",100,-1600,1600,100,-1600,1600);
 		self.histograms["f_minhcalsimhit_rz"] = r.TH2F("f_minhcalsimhit_rz",";r pos;z pos",100,0,4500,100,0,3500);
 		# track "reconstruction"
-		self.histograms["f_ntracks"] = r.TH1F("f_ntracks",";n tracks;N",10,0,10);
-		self.histograms["f_ntracks__nohcalveto"] = r.TH1F("f_ntracks__nohcalveto",";n tracks;N",10,0,10);
+		self.histograms["f_ntracks"] = r.TH1F("f_ntracks",";n tracks;N",11,-0.5,10.5);
+		self.histograms["f_ntracks__nohcalveto"] = r.TH1F("f_ntracks__nohcalveto",";n tracks;N",11,-0.5,10.5);
 		# ecal reconstruction
 		self.histograms["f_bdtval"] = r.TH1F("f_bdtval",";BDT;N",50,0,1);
 		self.histograms["f_bdtval__nohcalveto"] = r.TH1F("f_bdtval__nohcalveto",";BDT;N",50,0,1);
 		# hcal reconstruction
-		self.histograms["f_nhcalhits"] = r.TH1F("f_nhcalhits",";n tracks;N",50,0,200);
-		self.histograms["f_hcalhitPEs"] = r.TH1F("f_hcalhitPEs",";n tracks;N",50,0,50);
+		self.histograms["f_nhcalhits"] = r.TH1F("f_nhcalhits",";n hits;N",201,-0.5,200.5);
+		self.histograms["f_hcalhitPEs"] = r.TH1F("f_hcalhitPEs",";PEs;N",101,-0.5,100.5);
+		self.histograms["f_hcalMaxPEs"] = r.TH1F("f_hcalMaxPEs","; PEs (max);N",101,-0.5,100.5);
+
+		self.histograms["f_hcalMaxPEs_ntracks"]  = r.TH2F("f_hcalMaxPEs_ntracks","; PEs (max);N tracks",101,-0.5,100.5,11,-0.5,10.5);
+		self.histograms["f_nhcalhits_ntracks"] = r.TH2F("f_nhcalhits_ntracks",";n hits;N tracks",201,-0.5,200.5,11,-0.5,10.5);
 
 		## gen information
 		# inclusive
@@ -163,12 +167,18 @@ class sampleContainer:
 			# hcal veto info
 			b_hcalvetoed = 0;
 			nhcalhits = 0;
+			maxPEs = 0;
 			for ih,hit in enumerate(self.hcalHits):
 				nhcalhits+=1;
 				if hit.getPE() >= 8: b_hcalvetoed = 1;				
 				self.histograms["f_hcalhitPEs"].Fill(hit.getPE());
+				if hit.getPE() > maxPEs: maxPEs = hit.getPE();
 			self.histograms["b_hcalVeto"].Fill( b_hcalvetoed );
 			self.histograms["f_nhcalhits"].Fill(nhcalhits);
+			self.histograms["f_hcalMaxPEs"].Fill(maxPEs);
+
+			self.histograms["f_hcalMaxPEs_ntracks"].Fill(maxPEs,ntracks);
+			self.histograms["f_nhcalhits_ntracks"].Fill(nhcalhits,ntracks);
 
 			if b_hcalvetoed == 0:
 				self.histograms["f_edeptot_ecal__nohcalveto"].Fill(totale_ecalsimhits);

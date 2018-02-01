@@ -26,9 +26,9 @@ def generate_macro(output_path):
     macro_file.write('/ldmx/biasing/threshold 2500\n')
     macro_file.write('/run/initialize\n')
     macro_file.write('/ldmx/biasing/xsec/particle gamma\n')
-    macro_file.write('/ldmx/biasing/xsec/process GammaToMuPair\n')
+    # macro_file.write('/ldmx/biasing/xsec/process GammaToMuPair\n')
     macro_file.write('/ldmx/biasing/xsec/threshold 2500\n')
-    macro_file.write('/ldmx/biasing/xsec/factor 40000\n')
+    macro_file.write('/ldmx/biasing/xsec/factor 30000\n')
     macro_file.write('/gun/particle e-\n')
     macro_file.write('/gun/energy 4.0 GeV\n')
     macro_file.write('/gun/position 0. 0. -.55 mm\n')
@@ -56,7 +56,7 @@ def generate_macro(output_path):
     macro_file.write('/ldmx/persistency/root/file ' + output_path + '.root\n')
     macro_file.write('/random/setSeeds %s %s\n' % (seed1, seed2)) 
     macro_file.write('/run/beamOn 1000000\n') 
-    # macro_file.write('/run/beamOn 2000\n') 
+    #macro_file.write('/run/beamOn 10000\n') 
     macro_file.close()
 
     return macro_path   
