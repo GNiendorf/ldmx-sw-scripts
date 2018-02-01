@@ -36,14 +36,14 @@ class sampleContainer:
 		self.ecalVetoRes = r.TClonesArray('ldmx::EcalVetoResult');
 		self.trackRes    = r.TClonesArray('ldmx::FindableTrackResult');
 		self.tin.SetBranchAddress("EventHeader",  r.AddressOf( self.evHeader ));
-		self.tin.SetBranchAddress("Trigger_recon",  r.AddressOf( self.trigRes ));
+		self.tin.SetBranchAddress("Trigger_reco",  r.AddressOf( self.trigRes ));
 		self.tin.SetBranchAddress("SimParticles_sim",  r.AddressOf( self.simParticles ));
 		self.tin.SetBranchAddress("EcalSimHits_sim",  r.AddressOf( self.ecalSimHits ));
 		self.tin.SetBranchAddress("HcalSimHits_sim",  r.AddressOf( self.hcalSimHits ));
-		self.tin.SetBranchAddress("hcalDigis_recon",  r.AddressOf( self.hcalHits ));
-		self.tin.SetBranchAddress("ecalDigis_recon",  r.AddressOf( self.ecalHits ));
-		self.tin.SetBranchAddress("EcalVeto_recon",  r.AddressOf( self.ecalVetoRes ));
-		self.tin.SetBranchAddress("FindableTracks_recon",  r.AddressOf( self.trackRes ));
+		self.tin.SetBranchAddress("hcalDigis_reco",  r.AddressOf( self.hcalHits ));
+		self.tin.SetBranchAddress("ecalDigis_reco",  r.AddressOf( self.ecalHits ));
+		self.tin.SetBranchAddress("EcalVeto_reco",  r.AddressOf( self.ecalVetoRes ));
+		self.tin.SetBranchAddress("FindableTracks_reco",  r.AddressOf( self.trackRes ));
 
 		self.ecalSPHits = r.TClonesArray('ldmx::SimTrackerHit');
 		self.tin.SetBranchAddress("EcalScoringPlaneHits_sim",  r.AddressOf( self.ecalSPHits ));
@@ -67,11 +67,19 @@ class sampleContainer:
 		self.histograms["f_minhcalsimhit_xy"] = r.TH2F("f_minhcalsimhit_xy",";x pos;y pos",100,-1600,1600,100,-1600,1600);
 		self.histograms["f_minhcalsimhit_rz"] = r.TH2F("f_minhcalsimhit_rz",";r pos;z pos",100,0,4500,100,0,3500);
 		# track "reconstruction"
-		self.histograms["f_ntracks"] = r.TH1F("f_ntracks",";n tracks;N",10,0,10);
-		self.histograms["f_ntracks__nohcalveto"] = r.TH1F("f_ntracks__nohcalveto",";n tracks;N",10,0,10);
+		self.histograms["f_ntracks"] = r.TH1F("f_ntracks",";n tracks;N",11,-0.5,10.5);
+		self.histograms["f_ntracks__nohcalveto"] = r.TH1F("f_ntracks__nohcalveto",";n tracks;N",11,-0.5,10.5);
+		# ecal reconstruction
+		self.histograms["f_bdtval"] = r.TH1F("f_bdtval",";BDT;N",50,0,1);
+		self.histograms["f_bdtval__nohcalveto"] = r.TH1F("f_bdtval__nohcalveto",";BDT;N",50,0,1);
 		# hcal reconstruction
-		self.histograms["f_nhcalhits"] = r.TH1F("f_nhcalhits",";n tracks;N",50,0,200);
-		self.histograms["f_hcalhitPEs"] = r.TH1F("f_hcalhitPEs",";n tracks;N",50,0,50);
+		self.histograms["f_nhcalhits"] = r.TH1F("f_nhcalhits",";n hits;N",201,-0.5,200.5);
+		self.histograms["f_hcalhitPEs"] = r.TH1F("f_hcalhitPEs",";PEs;N",101,-0.5,100.5);
+		self.histograms["f_hcalMaxPEs"] = r.TH1F("f_hcalMaxPEs","; PEs (max);N",101,-0.5,100.5);
+
+		self.histograms["f_hcalMaxPEs_ntracks"]  = r.TH2F("f_hcalMaxPEs_ntracks","; PEs (max);N tracks",101,-0.5,100.5,11,-0.5,10.5);
+		self.histograms["f_nhcalhits_ntracks"] = r.TH2F("f_nhcalhits_ntracks",";n hits;N tracks",201,-0.5,200.5,11,-0.5,10.5);
+
 		## gen information
 		# inclusive
 		# not vetoed by hcal
@@ -100,13 +108,13 @@ class sampleContainer:
 		nent = self.tin.GetEntriesFast();
 		print "nent = ", nent
 		for i in range(nent):
-			print("---",i);
+			# print("---",i);
 			if(nent/100 > 0 and i % (1 * nent/100) == 0):
 				sys.stdout.write("\r[" + "="*int(20*i/nent) + " " + str(round(100.*i/nent,0)) + "% done")
 				sys.stdout.flush()
 	
 			self.tin.GetEntry(i);
-			
+						
 			# event weight
 			ew = 1./self.evHeader.getWeight();
 			# ew = 1.;
@@ -123,6 +131,8 @@ class sampleContainer:
 			# ecal veto info
 			if self.ecalVetoRes[0].passesVeto(): self.histograms["b_ecalVeto"].Fill(1.,ew);
 			else:                                self.histograms["b_ecalVeto"].Fill(0.,ew);
+			self.histograms["f_bdtval"].Fill( self.ecalVetoRes[0].getDisc() );
+
 
 			# # ecal sim info
 			necalsimhits = 0;
@@ -137,8 +147,8 @@ class sampleContainer:
 			eweightedz /= totale_ecalsimhits;
 			self.histograms["f_edeptot_ecal"].Fill(totale_ecalsimhits);
 			self.histograms["f_zavgeweight_ecal"].Fill(eweightedz);
-			print "totale_ecalsimhits = ", totale_ecalsimhits
-			print "eweightedz = ", eweightedz
+			# print "totale_ecalsimhits = ", totale_ecalsimhits
+			# print "eweightedz = ", eweightedz
 
 			# # track info
 			ntracks = 0.;
@@ -151,22 +161,30 @@ class sampleContainer:
 			self.histograms["f_ntracks"].Fill(ntracks);
 			if ntracks <= 1: self.histograms["b_trckVeto"].Fill(0.);
 			else:            self.histograms["b_trckVeto"].Fill(1.);
-			print "ntracks = ",ntracks
+			# print "ntracks = ",ntracks
 
+			
 			# hcal veto info
 			b_hcalvetoed = 0;
 			nhcalhits = 0;
+			maxPEs = 0;
 			for ih,hit in enumerate(self.hcalHits):
 				nhcalhits+=1;
 				if hit.getPE() >= 8: b_hcalvetoed = 1;				
 				self.histograms["f_hcalhitPEs"].Fill(hit.getPE());
+				if hit.getPE() > maxPEs: maxPEs = hit.getPE();
 			self.histograms["b_hcalVeto"].Fill( b_hcalvetoed );
 			self.histograms["f_nhcalhits"].Fill(nhcalhits);
+			self.histograms["f_hcalMaxPEs"].Fill(maxPEs);
+
+			self.histograms["f_hcalMaxPEs_ntracks"].Fill(maxPEs,ntracks);
+			self.histograms["f_nhcalhits_ntracks"].Fill(nhcalhits,ntracks);
 
 			if b_hcalvetoed == 0:
 				self.histograms["f_edeptot_ecal__nohcalveto"].Fill(totale_ecalsimhits);
 				self.histograms["f_zavgeweight_ecal__nohcalveto"].Fill(eweightedz);
 				self.histograms["f_ntracks__nohcalveto"].Fill(ntracks);
+				self.histograms["f_bdtval__nohcalveto"].Fill( self.ecalVetoRes[0].getDisc() );
 				self.tsklim.Fill(); # sklimming!!
 
 			if b_hcalvetoed == 1:
@@ -189,9 +207,9 @@ class sampleContainer:
 			if ntracks <= 1 and b_hcalvetoed == 0: self.histograms["b_hcalOrtrackVeto"].Fill(0.);
 			else                                 : self.histograms["b_hcalOrtrackVeto"].Fill(1.);
 
-			print "xpos \t y pos \t z pos \t simpdgid \t simE \t id \t px \t py \t pz";
-			for ih,h in enumerate(self.ecalSPHits):
-				print "%0.1f \t %0.1f \t %0.1f \t %i \t %0.4f \t %i \t %0.2f \t %0.2f \t %0.2f" % (h.getPosition()[0], h.getPosition()[1], h.getPosition()[2], h.getSimParticle().getPdgID(), h.getSimParticle().getEnergy(), h.getID(), h.getMomentum()[0], h.getMomentum()[1], h.getMomentum()[2]);
+			# print "xpos \t y pos \t z pos \t simpdgid \t simE \t id \t px \t py \t pz";
+			# for ih,h in enumerate(self.ecalSPHits):
+			# 	print "%0.1f \t %0.1f \t %0.1f \t %i \t %0.4f \t %i \t %0.2f \t %0.2f \t %0.2f" % (h.getPosition()[0], h.getPosition()[1], h.getPosition()[2], h.getSimParticle().getPdgID(), h.getSimParticle().getEnergy(), h.getID(), h.getMomentum()[0], h.getMomentum()[1], h.getMomentum()[2]);
 
 			# if i > 200: break;
 			
@@ -261,6 +279,6 @@ if __name__ == "__main__":
 	r.gROOT.SetBatch()
 
 	# Get the Event library 
-	r.gSystem.Load("/u/ey/ntran/ldmx/dev/muons/officialv3/ldmx-sw/install/lib/libEvent.so");	
+	r.gSystem.Load("/u/ey/ntran/ldmx/dev/reco/ldmx-sw/install/lib/libEvent.so");	
 
 	main(options,args);
