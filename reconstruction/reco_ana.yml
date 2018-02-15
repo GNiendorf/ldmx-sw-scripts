@@ -1,6 +1,6 @@
-Script: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/reconstruction/run_reco.py
-RecoConfig: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/reconstruction/ldmx-reco.py.tpl
-InputPath: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/prod_20170907
-#Detector: ldmx-det-full-v3-fieldmap-magnet
-OutputPath: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/prod_20170907_reco
-EnvScript: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/production/setupForMuons.sh
+Script: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/reconstruction-with-merge/run_reco.py
+RecoConfig: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/reconstruction-with-merge/ldmx-reco.py.tpl
+InputPath: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/prod_ecal_muon_20171201_1
+OutputPath: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/reconstruction-with-merge/test-reco
+EnvScript: /u/ey/ntran/ldmx/dev/reco/ldmx-sw/install/bin/ldmx-setup-env.sh
+StepSize: 25

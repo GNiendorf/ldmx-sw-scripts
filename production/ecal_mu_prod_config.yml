@@ -1,0 +1,8 @@
+Jobs: 10000
+Script: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/production/run_ecal_muon.py
+Output: ntran_4pt0_gev_e_ecal_muon_v3_magnet_20180129
+Detector: ldmx-det-full-v3-fieldmap-magnet
+Path: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/prod_ecal_muon_20180129_1
+#EnvScript: /u/ey/ntran/ldmx/dev/scripting/ldmx-sw-scripts/production/setupForMuons.sh
+#EnvScript: /u/ey/ntran/ldmx/dev/Nov20/ldmx-sw/install/bin/ldmx-setup-env.sh 
+EnvScript: /u/ey/ntran/ldmx-software/setup.sh
