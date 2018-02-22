@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import argparse
 import importlib
 import os
@@ -20,7 +19,7 @@ from sklearn import metrics
 
 ####################################################################################
 class sampleContainer:
-    def __init__(self, fn,maxEvts,trainFrac,isBkg,iseBkg,iseSig):
+    def __init__(self, fn,maxEvts,trainFrac,isBkg):
         print "Initializing Container!"
         self.tin = r.TChain("LDMX_Events")
         self.tin.Add(fn)
@@ -28,8 +27,6 @@ class sampleContainer:
         self.maxEvts   = maxEvts
         self.trainFrac = trainFrac
         self.isBkg = isBkg
-	self.iseBkg = iseBkg
-	self.iseSig = iseSig
 
         self.evHeader = r.ldmx.EventHeader()
         self.simParticles = r.TClonesArray('ldmx::SimParticle')
@@ -70,10 +67,6 @@ class sampleContainer:
 
             evt.append(self.ecalVetoRes[0].getYStd())
 
-            evt.append(self.ecalVetoRes[0].getXMean())
-
-            evt.append(self.ecalVetoRes[0].getYMean())
-
             evt.append(self.ecalVetoRes[0].getAvgLayerHit())
 
             evt.append(self.ecalVetoRes[0].getDeepestLayerHit())
@@ -83,7 +76,7 @@ class sampleContainer:
 ######################################################################################
             self.events.append(evt)
 
-            if (len(self.events)%10000 == 0 and len(self.events) > 0):
+            if (len(self.events)%100000 == 0 and len(self.events) > 0):
                 print 'The shape of events = ', np.shape(self.events)
 
 
@@ -128,8 +121,8 @@ if __name__ == "__main__":
 
 
     parser.add_option('--seed', dest='seed',type="int",  default=2, help='Numpy random seed.')
-    parser.add_option('--train_frac', dest='train_frac',  default=.99, help='Fraction of events to use for training')
-    parser.add_option('--max_evt', dest='max_evt',type="int",  default=480153, help='Max Events to load')
+    parser.add_option('--train_frac', dest='train_frac',  default=.80, help='Fraction of events to use for training')
+    parser.add_option('--max_evt', dest='max_evt',type="int",  default=1000000, help='Max Events to load')
     parser.add_option('--out_name', dest='out_name',  default='bdt', help='Output Pickle Name')
     parser.add_option('--swdir', dest='swdir',  default='../../install', help='ldmx-sw build directory')
     parser.add_option('--eta', dest='eta',type="float",  default=0.023, help='Learning Rate')
@@ -168,12 +161,12 @@ if __name__ == "__main__":
 
 
     print 'Loading sig_file = %s' % (options.sig_file)
-    sigContainer = sampleContainer(options.sig_file,options.max_evt,options.train_frac,False,False,False)
+    sigContainer = sampleContainer(options.sig_file,options.max_evt,options.train_frac,False)
     sigContainer.root2PyEvents()
     sigContainer.constructTrainAndTest()
 
     print 'Loading bkg_file = %s' % (options.bkg_file)
-    bkgContainer = sampleContainer(options.bkg_file,options.max_evt,options.train_frac,True,False,False)
+    bkgContainer = sampleContainer(options.bkg_file,options.max_evt,options.train_frac,True)
     bkgContainer.root2PyEvents()
     bkgContainer.constructTrainAndTest()
 
