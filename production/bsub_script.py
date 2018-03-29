@@ -58,6 +58,7 @@ def main():
 
         command = 'python %s -d %s -p %s -o %s' % (run_script, detector, path, output_path)
         batch_command = "bsub -q medium -o %s -W 2800 %s" % (log_path,command)
+        # batch_command = "bsub -q short -o %s -W 60 %s" % (log_path,command)
         #batch_command = command
         #print batch_command
         

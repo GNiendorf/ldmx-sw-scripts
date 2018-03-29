@@ -16,43 +16,45 @@ def generate_macro(output_path):
     macro_path = output_path + ".mac"
     print 'Writing macro to %s' % macro_path
     macro_file = open(macro_path, 'w')
+
     macro_file.write('/persistency/gdml/read detector.gdml\n')
     macro_file.write('/ldmx/pw/enable \n')
     macro_file.write('/ldmx/pw/read detectors/scoring_planes/detector.gdml\n')
+
     macro_file.write('/ldmx/biasing/enable\n')
     macro_file.write('/ldmx/biasing/particle e-\n')
     macro_file.write('/ldmx/biasing/process electronNuclear\n')
     macro_file.write('/ldmx/biasing/volume target\n')
-    macro_file.write('/ldmx/biasing/threshold 3999\n')
+
     macro_file.write('/run/initialize\n')
-    macro_file.write('//ldmx/biasing/xsec/bias_incident\n')
+
     macro_file.write('/ldmx/biasing/xsec/particle e-\n')
-    macro_file.write('/ldmx/biasing/xsec/process electronNuclear\n')
-    macro_file.write('/ldmx/biasing/xsec/threshold 3999\n')
     macro_file.write('/ldmx/biasing/xsec/factor 1000000\n')
+
     macro_file.write('/gun/particle e-\n')
     macro_file.write('/gun/energy 4.0 GeV\n')
-    macro_file.write('/gun/position 0. 0. -.55 mm\n')
+    macro_file.write('/gun/position 0. 0. -.68 mm\n')
     macro_file.write('/gun/direction 0. 0. 1.0\n')
+
     macro_file.write('/ldmx/plugins/load EventPrintPlugin\n')
     macro_file.write('/ldmx/plugins/EventPrintPlugin/modulus 1000\n')
-    macro_file.write('/ldmx/plugins/load SimpleProcessFilter libBiasing.so \n')
-    macro_file.write('/ldmx/plugins/SimpleProcessFilter/process electronNuclear\n')
-    macro_file.write('/ldmx/plugins/SimpleProcessFilter/volume target_PV\n')
-    macro_file.write('/ldmx/plugins/SimpleProcessFilter/track_id 1\n')
-    macro_file.write('/ldmx/plugins/SimpleProcessFilter/pdg_id 11\n')
+ 
+    macro_file.write('/ldmx/plugins/load TargetENProcessFilter libBiasing.so \n')
+
     macro_file.write('/ldmx/generators/beamspot/enable\n')
     macro_file.write('/ldmx/generators/beamspot/sizeX 20.0\n')
     macro_file.write('/ldmx/generators/beamspot/sizeY 40.0\n')
+
     macro_file.write('/ldmx/persistency/root/dropCol MagnetScoringPlaneHits\n')
     macro_file.write('/ldmx/persistency/root/dropCol TrackerScoringPlaneHits\n')
     macro_file.write('/ldmx/persistency/root/dropCol HcalScoringPlaneHits\n')
     macro_file.write('/ldmx/persistency/root/dropCol TargetScoringPlaneHits\n')
+
     macro_file.write('/ldmx/persistency/root/verbose 1\n')
     macro_file.write('/ldmx/persistency/root/file ' + output_path + '.root\n')
     macro_file.write('/random/setSeeds %s %s\n' % (seed1, seed2)) 
     macro_file.write('/run/beamOn 1000000\n') 
-    #macro_file.write('/run/beamOn 10000\n') 
+    # macro_file.write('/run/beamOn 10000\n') 
     macro_file.close()
 
     return macro_path   
