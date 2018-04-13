@@ -1,6 +1,6 @@
-Jobs: 1000
+Jobs: 10000
 Script: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/production/run_target_en.py
 Output: e_target_en_v3_magnet_4pt0_gev
 Detector: ldmx-det-full-v3-fieldmap-magnet
-Path: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/production/prod1
+Path: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/production/prod2
 EnvScript: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw/install/bin/ldmx-setup-env.sh
