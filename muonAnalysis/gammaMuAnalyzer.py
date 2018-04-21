@@ -36,14 +36,14 @@ class sampleContainer:
 		self.ecalVetoRes = r.TClonesArray('ldmx::EcalVetoResult');
 		self.trackRes    = r.TClonesArray('ldmx::FindableTrackResult');
 		self.tin.SetBranchAddress("EventHeader",  r.AddressOf( self.evHeader ));
-		self.tin.SetBranchAddress("Trigger_reco",  r.AddressOf( self.trigRes ));
+		self.tin.SetBranchAddress("Trigger_recon",  r.AddressOf( self.trigRes ));
 		self.tin.SetBranchAddress("SimParticles_sim",  r.AddressOf( self.simParticles ));
-		self.tin.SetBranchAddress("EcalSimHits_sim",  r.AddressOf( self.ecalSimHits ));
-		self.tin.SetBranchAddress("HcalSimHits_sim",  r.AddressOf( self.hcalSimHits ));
-		self.tin.SetBranchAddress("hcalDigis_reco",  r.AddressOf( self.hcalHits ));
-		self.tin.SetBranchAddress("ecalDigis_reco",  r.AddressOf( self.ecalHits ));
-		self.tin.SetBranchAddress("EcalVeto_reco",  r.AddressOf( self.ecalVetoRes ));
-		self.tin.SetBranchAddress("FindableTracks_reco",  r.AddressOf( self.trackRes ));
+		self.tin.SetBranchAddress("SortedEcalSimHits_recon",  r.AddressOf( self.ecalSimHits ));
+		self.tin.SetBranchAddress("SortedHcalSimHits_recon",  r.AddressOf( self.hcalSimHits ));
+		self.tin.SetBranchAddress("hcalDigis_recon",  r.AddressOf( self.hcalHits ));
+		self.tin.SetBranchAddress("ecalDigis_recon",  r.AddressOf( self.ecalHits ));
+		self.tin.SetBranchAddress("EcalVeto_recon",  r.AddressOf( self.ecalVetoRes ));
+		self.tin.SetBranchAddress("FindableTracks_recon",  r.AddressOf( self.trackRes ));
 
 		self.ecalSPHits = r.TClonesArray('ldmx::SimTrackerHit');
 		self.tin.SetBranchAddress("EcalScoringPlaneHits_sim",  r.AddressOf( self.ecalSPHits ));
@@ -72,13 +72,18 @@ class sampleContainer:
 		# ecal reconstruction
 		self.histograms["f_bdtval"] = r.TH1F("f_bdtval",";BDT;N",50,0,1);
 		self.histograms["f_bdtval__nohcalveto"] = r.TH1F("f_bdtval__nohcalveto",";BDT;N",50,0,1);
+		self.histograms["f_bdtval__nohcaltrkveto"] = r.TH1F("f_bdtval__nohcaltrkveto",";BDT;N",50,0,1);
+
 		# hcal reconstruction
 		self.histograms["f_nhcalhits"] = r.TH1F("f_nhcalhits",";n hits;N",201,-0.5,200.5);
 		self.histograms["f_hcalhitPEs"] = r.TH1F("f_hcalhitPEs",";PEs;N",101,-0.5,100.5);
 		self.histograms["f_hcalMaxPEs"] = r.TH1F("f_hcalMaxPEs","; PEs (max);N",101,-0.5,100.5);
+		self.histograms["f_hcalSumPEs"] = r.TH1F("f_hcalSumPEs","; PEs (sum);N",101,-0.5,500.5);
 
+		# 2D info
 		self.histograms["f_hcalMaxPEs_ntracks"]  = r.TH2F("f_hcalMaxPEs_ntracks","; PEs (max);N tracks",101,-0.5,100.5,11,-0.5,10.5);
 		self.histograms["f_nhcalhits_ntracks"] = r.TH2F("f_nhcalhits_ntracks",";n hits;N tracks",201,-0.5,200.5,11,-0.5,10.5);
+		self.histograms["f_hcalSumPEs_nhcalhits"] = r.TH2F("f_hcalSumPEs_nhcalhits","; PEs (sum); N Hcal Hits",101,-0.5,500.5,201,-0.5,200.5);
 
 		## gen information
 		# inclusive
@@ -116,8 +121,8 @@ class sampleContainer:
 			self.tin.GetEntry(i);
 						
 			# event weight
-			ew = 1./self.evHeader.getWeight();
-			# ew = 1.;
+			#ew = 1./self.evHeader.getWeight();
+			ew = 1.;
 			self.histograms["b_total"].Fill(1.,ew);
 
 			# trigger info
@@ -144,7 +149,8 @@ class sampleContainer:
 				totale_ecalsimhits += h.getEdep();
 				eweightedz += h.getEdep()*h.getPosition()[2];
 			# print "number of ecal sim hits and total energy = ", necalsimhits, totale_ecalsimhits
-			eweightedz /= totale_ecalsimhits;
+			if totale_ecalsimhits > 0: eweightedz /= totale_ecalsimhits;
+			else: eweightedz = 0;
 			self.histograms["f_edeptot_ecal"].Fill(totale_ecalsimhits);
 			self.histograms["f_zavgeweight_ecal"].Fill(eweightedz);
 			# print "totale_ecalsimhits = ", totale_ecalsimhits
@@ -168,17 +174,23 @@ class sampleContainer:
 			b_hcalvetoed = 0;
 			nhcalhits = 0;
 			maxPEs = 0;
-			for ih,hit in enumerate(self.hcalHits):
-				nhcalhits+=1;
-				if hit.getPE() >= 8: b_hcalvetoed = 1;				
+			sumPEs = 0;
+			for ih,hit in enumerate(self.hcalHits):				
+				if hit.getPE() >= 8: 
+					b_hcalvetoed = 1;				
+					nhcalhits+=1;
 				self.histograms["f_hcalhitPEs"].Fill(hit.getPE());
 				if hit.getPE() > maxPEs: maxPEs = hit.getPE();
+				sumPEs += hit.getPE();
 			self.histograms["b_hcalVeto"].Fill( b_hcalvetoed );
 			self.histograms["f_nhcalhits"].Fill(nhcalhits);
 			self.histograms["f_hcalMaxPEs"].Fill(maxPEs);
+			self.histograms["f_hcalSumPEs"].Fill(sumPEs);
 
+			# 2d information
 			self.histograms["f_hcalMaxPEs_ntracks"].Fill(maxPEs,ntracks);
 			self.histograms["f_nhcalhits_ntracks"].Fill(nhcalhits,ntracks);
+			self.histograms["f_hcalSumPEs_nhcalhits"].Fill(sumPEs,nhcalhits);
 
 			if b_hcalvetoed == 0:
 				self.histograms["f_edeptot_ecal__nohcalveto"].Fill(totale_ecalsimhits);
@@ -186,6 +198,8 @@ class sampleContainer:
 				self.histograms["f_ntracks__nohcalveto"].Fill(ntracks);
 				self.histograms["f_bdtval__nohcalveto"].Fill( self.ecalVetoRes[0].getDisc() );
 				self.tsklim.Fill(); # sklimming!!
+				if ntracks <= 1: 
+					self.histograms["f_bdtval__nohcaltrkveto"].Fill( self.ecalVetoRes[0].getDisc() );
 
 			if b_hcalvetoed == 1:
 				# hcal simhit info
@@ -211,7 +225,7 @@ class sampleContainer:
 			# for ih,h in enumerate(self.ecalSPHits):
 			# 	print "%0.1f \t %0.1f \t %0.1f \t %i \t %0.4f \t %i \t %0.2f \t %0.2f \t %0.2f" % (h.getPosition()[0], h.getPosition()[1], h.getPosition()[2], h.getSimParticle().getPdgID(), h.getSimParticle().getEnergy(), h.getID(), h.getMomentum()[0], h.getMomentum()[1], h.getMomentum()[2]);
 
-			# if i > 200: break;
+			if i > 1000: break;
 			
 			# self.tout.Fill();
 
@@ -260,10 +274,10 @@ if __name__ == "__main__":
 	
 	parser = OptionParser()
 	parser.add_option('-b', action='store_true', dest='noX', default=False, help='no X11 windows')
-	parser.add_option("--lumi", dest="lumi", type=float, default = 30,help="luminosity", metavar="lumi")
+	#parser.add_option("--lumi", dest="lumi", type=float, default = 30,help="luminosity", metavar="lumi")
 	parser.add_option('-i','--ifile', dest='ifile', default = 'file.root',help='directory with data', metavar='idir')
 	parser.add_option('-o','--ofile', dest='ofile', default = 'ofile.root',help='directory to write plots', metavar='odir')
-	parser.add_option('--swdir', dest='swdir', default = '/u/ey/ntran/ldmx/biasing/iss94/ldmx-sw',help='directory to write plots', metavar='odir')
+	#parser.add_option('--swdir', dest='swdir', default = '/u/ey/ntran/ldmx/biasing/iss94/ldmx-sw',help='directory to write plots', metavar='odir')
 	parser.add_option('--tag', dest='tag', default = '1',help='file tag', metavar='tag')
 
 	(options, args) = parser.parse_args()
@@ -279,6 +293,6 @@ if __name__ == "__main__":
 	r.gROOT.SetBatch()
 
 	# Get the Event library 
-	r.gSystem.Load("/u/ey/ntran/ldmx/dev/reco/ldmx-sw/install/lib/libEvent.so");	
+	r.gSystem.Load("/u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw/install/lib/libEvent.so");	
 
 	main(options,args);

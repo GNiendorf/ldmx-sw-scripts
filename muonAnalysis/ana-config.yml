@@ -1,0 +1,3 @@
+InputPath: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/reconstruction/prod2-v4
+OutputPath: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw-scripts/muonAnalysis/ana_target_en_2
+EnvScript: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw/install/bin/ldmx-setup-env.sh
