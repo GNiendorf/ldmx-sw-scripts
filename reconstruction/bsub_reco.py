@@ -61,9 +61,10 @@ def main():
 
         #log_path = '%s/reco_%s.log' % (output_prefix, f.split(".")[0])
         #log_path = 'log_reco_%s.log' % (f.split(".")[0])
+        log_path = 'log_reco_%i.log' % (i);
         command = 'python %s -o %s -c %s -i %s' % (run_script, output_prefix, config_tpl, input_files)
-        batch_command = "bsub -q medium -W 2800 %s" % (command)
-        # print command
+        batch_command = "bsub -q medium -o %s -W 2800 %s" % (log_path, command)
+        print command, log_path
         # print batch_command
 
         subprocess.Popen(batch_command, shell=True).wait()

@@ -70,20 +70,25 @@ class sampleContainer:
 		self.histograms["f_ntracks"] = r.TH1F("f_ntracks",";n tracks;N",11,-0.5,10.5);
 		self.histograms["f_ntracks__nohcalveto"] = r.TH1F("f_ntracks__nohcalveto",";n tracks;N",11,-0.5,10.5);
 		# ecal reconstruction
-		self.histograms["f_bdtval"] = r.TH1F("f_bdtval",";BDT;N",50,0,1);
-		self.histograms["f_bdtval__nohcalveto"] = r.TH1F("f_bdtval__nohcalveto",";BDT;N",50,0,1);
-		self.histograms["f_bdtval__nohcaltrkveto"] = r.TH1F("f_bdtval__nohcaltrkveto",";BDT;N",50,0,1);
+		self.histograms["f_bdtval"] = r.TH1F("f_bdtval",";BDT;N",25,0,1);
+		self.histograms["f_bdtval__nohcalveto"] = r.TH1F("f_bdtval__nohcalveto",";BDT;N",25,0,1);
+		self.histograms["f_bdtval__nohcaltrkveto"] = r.TH1F("f_bdtval__nohcaltrkveto",";BDT;N",25,0,1);
 
 		# hcal reconstruction
-		self.histograms["f_nhcalhits"] = r.TH1F("f_nhcalhits",";n hits;N",201,-0.5,200.5);
+		self.histograms["f_nhcalhits"] = r.TH1F("f_nhcalhits",";n hits;N",161,-0.5,160.5);
 		self.histograms["f_hcalhitPEs"] = r.TH1F("f_hcalhitPEs",";PEs;N",101,-0.5,100.5);
 		self.histograms["f_hcalMaxPEs"] = r.TH1F("f_hcalMaxPEs","; PEs (max);N",101,-0.5,100.5);
 		self.histograms["f_hcalSumPEs"] = r.TH1F("f_hcalSumPEs","; PEs (sum);N",101,-0.5,500.5);
+		self.histograms["f_nhcalhits__noecalveto"] = r.TH1F("f_nhcalhits__noecalveto",";n hits;N",161,-0.5,160.5);
+		self.histograms["f_nhcalhits__noecaltrkveto"] = r.TH1F("f_nhcalhits__noecaltrkveto",";n hits;N",161,-0.5,160.5);
+		self.histograms["f_hcalMaxPEs__noecalveto"] = r.TH1F("f_hcalMaxPEs__noecalveto",";PEs;N",101,-0.5,100.5);
+		self.histograms["f_hcalMaxPEs__noecaltrkveto"] = r.TH1F("f_hcalMaxPEs__noecaltrkveto",";PEs;N",101,-0.5,100.5);
 
 		# 2D info
 		self.histograms["f_hcalMaxPEs_ntracks"]  = r.TH2F("f_hcalMaxPEs_ntracks","; PEs (max);N tracks",101,-0.5,100.5,11,-0.5,10.5);
-		self.histograms["f_nhcalhits_ntracks"] = r.TH2F("f_nhcalhits_ntracks",";n hits;N tracks",201,-0.5,200.5,11,-0.5,10.5);
-		self.histograms["f_hcalSumPEs_nhcalhits"] = r.TH2F("f_hcalSumPEs_nhcalhits","; PEs (sum); N Hcal Hits",101,-0.5,500.5,201,-0.5,200.5);
+		self.histograms["f_nhcalhits_ntracks"] = r.TH2F("f_nhcalhits_ntracks",";n hits;N tracks",161,-0.5,160.5,11,-0.5,10.5);
+		self.histograms["f_hcalSumPEs_nhcalhits"] = r.TH2F("f_hcalSumPEs_nhcalhits","; PEs (sum); N Hcal Hits",101,-0.5,500.5,161,-0.5,160.5);
+		self.histograms["f_bdtVal_ntracks"]  = r.TH2F("f_bdtVal_ntracks","; ECal BDT ;N tracks",25,0,1,11,-0.5,10.5);
 
 		## gen information
 		# inclusive
@@ -168,8 +173,7 @@ class sampleContainer:
 			if ntracks <= 1: self.histograms["b_trckVeto"].Fill(0.);
 			else:            self.histograms["b_trckVeto"].Fill(1.);
 			# print "ntracks = ",ntracks
-
-			
+	
 			# hcal veto info
 			b_hcalvetoed = 0;
 			nhcalhits = 0;
@@ -187,10 +191,18 @@ class sampleContainer:
 			self.histograms["f_hcalMaxPEs"].Fill(maxPEs);
 			self.histograms["f_hcalSumPEs"].Fill(sumPEs);
 
+			if self.ecalVetoRes[0].getDisc() > 0.94:
+				self.histograms["f_nhcalhits__noecalveto"].Fill(nhcalhits);
+				self.histograms["f_hcalMaxPEs__noecalveto"].Fill(maxPEs);
+				if ntracks <= 1:  
+					self.histograms["f_nhcalhits__noecaltrkveto"].Fill(nhcalhits);
+					self.histograms["f_hcalMaxPEs__noecaltrkveto"].Fill(maxPEs);
+											
 			# 2d information
 			self.histograms["f_hcalMaxPEs_ntracks"].Fill(maxPEs,ntracks);
 			self.histograms["f_nhcalhits_ntracks"].Fill(nhcalhits,ntracks);
 			self.histograms["f_hcalSumPEs_nhcalhits"].Fill(sumPEs,nhcalhits);
+			self.histograms["f_bdtVal_ntracks"].Fill(self.ecalVetoRes[0].getDisc(),ntracks);
 
 			if b_hcalvetoed == 0:
 				self.histograms["f_edeptot_ecal__nohcalveto"].Fill(totale_ecalsimhits);

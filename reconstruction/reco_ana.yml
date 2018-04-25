@@ -1,6 +1,6 @@
-Script: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/reconstruction/run_reco.py
-RecoConfig: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/reconstruction/v3_recon_skim.py.tpl
-InputPath: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/production/prod2
-OutputPath: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/reconstruction/prod2-v4
-EnvScript: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw/install/bin/ldmx-setup-env.sh
-StepSize: 5
+Script: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw-scripts/reconstruction/run_reco.py
+RecoConfig: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw-scripts/reconstruction/v3_recon_skim.py.tpl
+InputPath: /u/ey/ntran/ldmx/centralSamples/v3-magnet/4pt0_gev_e_ecal_mumu/sim/prod_ecal_muon_20180129_1
+OutputPath: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw-scripts/reconstruction/prod042218-reco-4pt0_gev_e_ecal_mumu_20180129_1
+EnvScript: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw/install/bin/ldmx-setup-env.sh
+StepSize: 10

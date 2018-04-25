@@ -43,7 +43,7 @@ def main():
 	os.system('mv inputs.tar.gz %s/.' % (subdir))
 	os.chdir(subdir);
 
-	# print "number of reco files = ", len(listOfRootFiles);
+	print "number of reco files = ", len(listOfRootFiles);
 	for i,fnf in enumerate(listOfRootFiles):
 
 		fn = os.path.basename(fnf)
@@ -54,7 +54,7 @@ def main():
 		f1n = "tmp_%i_%s.sh" % (i,base);
 		f1=open(f1n, 'w')
 		f1.write('#!/bin/bash \n');
-		f1.write('scl enable devtoolset-6 bash');
+		f1.write('scl enable devtoolset-6 bash \n');
 		# f1.write('source /u/ey/ntran/ldmx/setup/setup.sh \n');		
 		f1.write('source %s \n' % (envscript));		
 		f1.write('cp inputs.tar.gz ${__LSF_JOB_TMPDIR__}/. \n');
@@ -75,7 +75,8 @@ def main():
 			print "file %i does not exists, submit job..." % (i)
 			os.system(command);
 			time.sleep(0.1);
-
+		# if i > 5: break;
+		
 	# os.chdir("../.");
 
 #----------------------------------------------------------------------------------------------------------------
