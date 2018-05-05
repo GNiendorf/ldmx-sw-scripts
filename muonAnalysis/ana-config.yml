@@ -1,3 +1,4 @@
-InputPath: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/reconstruction/prod2-v4
-OutputPath: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw-scripts/muonAnalysis/ana_target_en_2
+#InputPath: /u/ey/ntran/ldmx/dev/Mar2918/ldmx-sw-scripts/reconstruction/prod2-v4
+InputPath: /u/ey/ntran/ldmx/centralSamples/v3-magnet/4pt0_gev_e_target_en/sim-reco
+OutputPath: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw-scripts/muonAnalysis/ana_target_en_full6
 EnvScript: /u/ey/ntran/ldmx/dev/Apr1818/ldmx-sw/install/bin/ldmx-setup-env.sh
