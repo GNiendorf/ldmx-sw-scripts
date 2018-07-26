@@ -56,7 +56,7 @@ def main():
         log_path = output_path + ".log"
         print 'Log path: %s' % log_path
 
-        command = 'python %s -d %s -p %s -o %s' % (run_script, detector, path, output_path)
+        command = 'python %s -d %s -p %s -o %s -e %s' % (run_script, detector, path, output_path, env_script)
         batch_command = "bsub -q medium -o %s -W 2800 %s" % (log_path,command)
         # batch_command = "bsub -q short -o %s -W 60 %s" % (log_path,command)
         #batch_command = command

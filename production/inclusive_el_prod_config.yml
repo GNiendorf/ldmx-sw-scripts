@@ -1,0 +1,6 @@
+Jobs: 100
+Script: /u/ey/ntran/ldmx/dev/Jun2918/ldmx-sw-scripts-hcaldev/production/run_inclusive_el.py
+Output: e_inclusive_v5_magnet_4pt0_gev
+Detector: ldmx-det-full-v5-fieldmap-magnet
+Path: /u/ey/ntran/ldmx/dev/Jun2918/ldmx-sw-scripts-hcaldev/production/prod3
+EnvScript: /u/ey/ntran/ldmx/dev/Jun2918/ldmx-sw-hcaldev/install/bin/ldmx-setup-env.sh
