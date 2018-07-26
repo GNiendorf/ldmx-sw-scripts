@@ -64,6 +64,7 @@ def generate_macro(output_path):
 def main():
 
     parser = argparse.ArgumentParser(description='')
+    parser.add_argument("-e", "--envscript", help="env script.")    
     parser.add_argument("-o", "--output", help="Output file name.")
     parser.add_argument("-d", "--detector", help="Detector name.")
     parser.add_argument("-p", "--path", help="Path to copy output to.")
@@ -72,6 +73,8 @@ def main():
     if not args.output:
         parser.error('Please specify an output file name.')
 
+    env_command = ['bash', '-c', 'source %s && env' % args.envscript]
+    subprocess.Popen(env_command, stdout=subprocess.PIPE)
     
     #scratch_dir = '/nfs/slac/g/ldmx/scripts/tmp/%s' % os.environ['USER']
     scratch_dir = '/scratch/%s' % os.environ['USER']

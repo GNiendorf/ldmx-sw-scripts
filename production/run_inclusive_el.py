@@ -52,7 +52,7 @@ def generate_macro(output_path):
 def main():
 
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument("-e", "--envscript", help="Output file name.")
+    parser.add_argument("-e", "--envscript", help="env script.")
     parser.add_argument("-o", "--output", help="Output file name.")
     parser.add_argument("-d", "--detector", help="Detector name.")
     parser.add_argument("-p", "--path", help="Path to copy output to.")
