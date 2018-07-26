@@ -1,0 +1,4 @@
+InputPath: /u/ey/ntran/ldmx/dev/Jun2918/ldmx-sw-scripts-hcaldev/reconstruction/prod3_inclusive_electron_RECO
+OutputPath: /u/ey/ntran/ldmx/dev/Jun2918/ldmx-sw-scripts-hcaldev/analysis/prod3_inclusive_electron_ANA
+EnvScript: /u/ey/ntran/ldmx/dev/Jun2918/ldmx-sw-hcaldev/install/bin/ldmx-setup-env.sh
+Analyzer: hcalAnalyzer.py # must be in the same directory as the submission script
