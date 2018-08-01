@@ -6,8 +6,8 @@ author: Reese Petersen
 affiliations: University of Minnesota, LDMX Collaboration
 email: pet00831@umn.edu
 date: 16 July 2018
-description: This script writes lhe files which descibe cosmic muons intersecting the hcal of
-the LDMX detector with energy and zenith angle distributed according to a function provided by
+description: This script writes lhe files which descibe cosmic muons 
+with energy and momentum distributed according to a function provided by
 A. Dar in "Atmospheric Neutrinos, Astrophysical Neutrons, and Proton-Decay Experiments",
 18 July, 1983, Phys. Rev. Lett. Vol 51, No. 3, pg 227
 Other papers necessary to understand this function in its entirety include reference 7 from A. Dar:
@@ -23,7 +23,7 @@ import os
 import argparse
 import math
 import random
-import ROOT as r
+import ROOT
 
 # defaults
 hcal_depth_d = 3290 # 3290 mm for v2, v3, v4. 5994 mm for v7. Check hcal.gdml of your favorite geometry for details.
@@ -48,7 +48,7 @@ parser.add_argument("--thetaMax"  , dest = "thetaMax"  , help = "The high theta 
 parser.add_argument("--hcalDepth" , dest = "hcalDepth" , help = "The thickness of the full hcal (side and back) in z, default = %f"%(hcal_depth_d) , default=hcal_depth_d)
 arg = parser.parse_args()
 
-r.gRandom.SetSeed(0)
+ROOT.gRandom.SetSeed(0)
 # strip trailing slash and make the output directory if it does not exist
 output = arg.outputDir
 if output.split('/')[-1] == '':
@@ -81,12 +81,12 @@ ADarplus = "(0.04454993403165476*TMath::Exp(2.172701227027019/(0.1236*TMath::Cos
 ADarminus = "(0.031055887893745797*TMath::Exp(2.172701227027019/(0.1236*TMath::Cos(TMath::Pi()/180*y)-x*TMath::Cos(TMath::Pi()/180*y)-1.0609))*TMath::Power(TMath::Cos(TMath::Pi()/180*y),2.67-1.0106422229299041/(0.1236*TMath::Cos(TMath::Pi()/180*y)-x*TMath::Cos(TMath::Pi()/180*y)-1.0609))*(1.0777836695267741e-8*TMath::Power(TMath::Cos(TMath::Pi()/180*y),3.5)-2.1982416984362076e-8*TMath::Power(TMath::Cos(TMath::Pi()/180*y),3)*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218)+TMath::Power(x,2)*TMath::Power(TMath::Cos(TMath::Pi()/180*y),3)*(5.29122123868283e-7*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))-1.0791946001214612e-6*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218))+x*TMath::Power(TMath::Cos(TMath::Pi()/180*y),3)*(-1.3079898902023958e-7*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))+2.667769051500252e-7*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218))+TMath::Power(x,3)*TMath::Power(TMath::Cos(TMath::Pi()/180*y),3)*(-7.134872220446103e-7*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))+1.455224649570471e-6*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218))+(-0.3655580074957874*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))+TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218))+TMath::Power(TMath::Cos(TMath::Pi()/180*y),2)*(-0.0000200745894328675*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))+0.00005284221853410446*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218)+x*(0.0001624157721105785*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))-0.000427526039919939*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218))+TMath::Power(x,2)*(-0.0003285108659194549*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))+0.0008647371357603943*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218)))+TMath::Cos(TMath::Pi()/180*y)*(0.005288298944929909*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))-0.014325221533728156*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218)+x*(-0.021392795084667918*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))+0.057949925298253054*TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218)))))/((-0.00040406601131876197*TMath::Cos(TMath::Pi()/180*y)+0.0016345712431988753*x*TMath::Cos(TMath::Pi()/180*y)+1)*(-0.0029397862016351797*TMath::Cos(TMath::Pi()/180*y)+0.011892339003378558*x*TMath::Cos(TMath::Pi()/180*y)+1)*(-0.005035070902595827*TMath::Cos(TMath::Pi()/180*y)+0.02036840980014493*x*TMath::Cos(TMath::Pi()/180*y)+1)*(-0.008226881320143641*TMath::Cos(TMath::Pi()/180*y)+0.03328026424006327*x*TMath::Cos(TMath::Pi()/180*y)+1)*TMath::Power(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218,2.67)*(-0.42008790004955787*TMath::Sqrt(TMath::Cos(TMath::Pi()/180*y))+TMath::Sqrt(-0.2472*TMath::Cos(TMath::Pi()/180*y)+x*TMath::Cos(TMath::Pi()/180*y)+2.1218)))"
 # The spectrum is simulated in two parts, in the range E = 1(or emin) to 10 GeV and in the range E = 10 to 100(or emax) GeV. 
 # This allows better resolution of the steep peak at low energy and low zenith angle. Most muons have E < 10 GeV
-cmmc_spec = r.TF2("cmmc_spec",ADar,emin,emax,thmin,thmax)
-cmmc_spec_plus = r.TF2("cmmc_spec_plus",ADarplus,emin,emax,thmin,thmax)
-cmmc_spec_minus = r.TF2("cmmc_spec_minus",ADarminus,emin,emax,thmin,thmax)
+cmmc_spec = ROOT.TF2("cmmc_spec",ADar,emin,emax,thmin,thmax)
+cmmc_spec_plus = ROOT.TF2("cmmc_spec_plus",ADarplus,emin,emax,thmin,thmax)
+cmmc_spec_minus = ROOT.TF2("cmmc_spec_minus",ADarminus,emin,emax,thmin,thmax)
 # full spectrum split along 10 GeV:
-cmmc_spec1 = r.TF2("cmmc_spec1",ADar,emin,10.0,thmin,thmax)
-cmmc_spec2 = r.TF2("cmmc_spec2",ADar,10.0,emax,thmin,thmax)
+cmmc_spec1 = ROOT.TF2("cmmc_spec1",ADar,emin,10.0,thmin,thmax)
+cmmc_spec2 = ROOT.TF2("cmmc_spec2",ADar,10.0,emax,thmin,thmax)
 # set the resolution over each energy range and over theta to 250 points.
 cmmc_spec1.SetNpy(250)
 cmmc_spec2.SetNpy(250)
@@ -96,11 +96,11 @@ cmmc_spec2.SetNpx(250)
 full_int = cmmc_spec.Integral(emin,emax,thmin,thmax)
 low_frac = cmmc_spec1.Integral(emin,10,thmin,thmax)/full_int
 # initialize, generate random numbers
-E = r.Double()
-thdeg = r.Double()
+E = ROOT.Double()
+thdeg = ROOT.Double()
 print "cosmic_muon_lhe_generator.py: running..."
 for n in range(arg.numFiles):
-  filename = "cmmc_energy_"+str(int(emin))+"_"+str(int(emax))+"_GeV_theta_"+str(int(thmin))+"_"+str(int(thmax))+"_size_"+str(arg.numEvents)+"_deg_%04d.lhe"%(n)
+  filename = "cmmc_energy_"+str(int(emin))+"_"+str(int(emax))+"_GeV_theta_"+str(int(thmin))+"_"+str(int(thmax))+"_deg_"+str(arg.numEvents)+"_events_%04d.lhe"%(n)
   new_lhe = open("%s/%s"%(output,filename),"w")
   for i in range(arg.numEvents):
     rand = random.random()
@@ -144,7 +144,7 @@ for n in range(arg.numFiles):
       xv = xt
       yv = ymax
       zv = zt
-    # check for muons intersecting the positive x, negative x, positive z, and negative z planes
+    # now check for muons intersecting the positive x, negative x, positive z, and negative z planes
     else:
       if px < 0:
         yt = y + py/px*(xmax-x)
