@@ -29,7 +29,7 @@ import ROOT
 hcal_depth_d = 3290 # 3290 mm for v2, v3, v4. 5994 mm for v7. Check hcal.gdml of your favorite geometry for details.
 numEvents_d = 10
 numFiles_d = 1
-outputDir_d = "/home/%s/LDMX/cosmic_muon_lhe"%(os.environ["USER"])
+outputDir_d = ""
 emin_d = 1.
 emax_d = 100.
 thmin_d = 0.
@@ -51,13 +51,14 @@ arg = parser.parse_args()
 ROOT.gRandom.SetSeed(0)
 # strip trailing slash and make the output directory if it does not exist
 output = arg.outputDir
-if output.split('/')[-1] == '':
-  output = output[:-1]
-if os.path.exists(output):
-  print "cosmic_muon_lhe_generator.py: Outpath: %s exists."%(output)
-else:
-  print "cosmic_muon_lhe_generator.py: Outpath does not exist, making %s"%(output)
-  os.makedirs(output)
+if output != "":
+  if len(output.split('/')) != 2:
+    output = output+"/"
+  if os.path.exists(output):
+    print "cosmic_muon_lhe_generator.py: Outpath: %s exists."%(output)
+  else:
+    print "cosmic_muon_lhe_generator.py: Outpath does not exist, making %s"%(output)
+    os.makedirs(output)
 # inputs to generate the muons
 emin = float(arg.energyMin)
 emax = float(arg.energyMax)
@@ -101,7 +102,7 @@ thdeg = ROOT.Double()
 print "cosmic_muon_lhe_generator.py: running..."
 for n in range(arg.numFiles):
   filename = "cmmc_energy_"+str(int(emin))+"_"+str(int(emax))+"_GeV_theta_"+str(int(thmin))+"_"+str(int(thmax))+"_deg_"+str(arg.numEvents)+"_events_%04d.lhe"%(n)
-  new_lhe = open("%s/%s"%(output,filename),"w")
+  new_lhe = open("%s%s"%(output,filename),"w")
   for i in range(arg.numEvents):
     rand = random.random()
     if rand <= low_frac: # E <= 10 GeV
