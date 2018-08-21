@@ -101,7 +101,7 @@ E = ROOT.Double()
 thdeg = ROOT.Double()
 print "cosmic_muon_lhe_generator.py: running..."
 for n in range(arg.numFiles):
-  filename = "cmmc_energy_"+str(int(emin))+"_"+str(int(emax))+"_GeV_theta_"+str(int(thmin))+"_"+str(int(thmax))+"_deg_"+str(arg.numEvents)+"_events_%04d.lhe"%(n)
+  filename = "cosmic_muons_"+str(int(emin))+"_"+str(int(emax))+"_GeV_"+str(int(thmin))+"_"+str(int(thmax))+"_deg_"+str(arg.numEvents)+"_events_%04d.lhe"%(n)
   new_lhe = open("%s%s"%(output,filename),"w")
   for i in range(arg.numEvents):
     rand = random.random()
