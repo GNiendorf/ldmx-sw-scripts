@@ -5,7 +5,7 @@ file: cosmic_muon_lhe_generator.py
 author: Reese Petersen
 affiliations: University of Minnesota, LDMX Collaboration
 email: pet00831@umn.edu
-date: 16 July 2018
+date: 23 Aug 2018
 description: This script writes lhe files which descibe cosmic muons 
 with energy and momentum distributed according to a function provided by
 A. Dar in "Atmospheric Neutrinos, Astrophysical Neutrons, and Proton-Decay Experiments",
