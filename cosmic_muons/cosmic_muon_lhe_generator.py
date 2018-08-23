@@ -26,7 +26,6 @@ import random
 import ROOT
 
 # defaults
-hcal_depth_d = 3290 # 3290 mm for v2, v3, v4. 5994 mm for v7. Check hcal.gdml of your favorite geometry for details.
 numEvents_d = 10
 numFiles_d = 1
 outputDir_d = ""
@@ -36,8 +35,9 @@ thmin_d = 0.
 thmax_d = 75.
 ebins = 100
 thbins = 100
+geometry_d = "v9"
 # get number of events
-parser = argparse.ArgumentParser(description = "Makes lhe files for atmospheric muons intersecting the HCal of the LDMX detector (v3 geometry).")
+parser = argparse.ArgumentParser(description = "Makes lhe files for cosmic muons intersecting the HCal of the LDMX detector.")
 parser.add_argument("--numEvents" , dest = "numEvents" , help = "number of events per lhe file, default = %s"%(numEvents_d)                        , default = numEvents_d, type = int)
 parser.add_argument("--numFiles"  , dest = "numFiles"  , help = "number of lhe files to make, default = %s"%(numFiles_d)                           , default = numFiles_d, type = int)
 parser.add_argument("--outputDir" , dest = "outputDir" , help = "the directory to put the cmmc lhe files, default = %s"%(outputDir_d)              , default = outputDir_d)
@@ -45,7 +45,7 @@ parser.add_argument("--energyMin" , dest = "energyMin" , help = "The low energy 
 parser.add_argument("--energyMax" , dest = "energyMax" , help = "The high energy limit for the muon spectrum in GeV, default = %f"%(emax_d)        , default=emax_d)
 parser.add_argument("--thetaMin"  , dest = "thetaMin"  , help = "The low theta limit for the muon specturm in degrees, default = %f"%(thmin_d)     , default=thmin_d)
 parser.add_argument("--thetaMax"  , dest = "thetaMax"  , help = "The high theta limit for the muon spectrum in degrees, default = %f"%(thmax_d)    , default=thmax_d)
-parser.add_argument("--hcalDepth" , dest = "hcalDepth" , help = "The thickness of the full hcal (side and back) in z, default = %f"%(hcal_depth_d) , default=hcal_depth_d)
+parser.add_argument("--geometry"  , dest = "geometry"  , help = "The detector geometry (v3 through v10 available), default = %s"%(geometry_d)      , default=geometry_d)
 arg = parser.parse_args()
 
 ROOT.gRandom.SetSeed(0)
@@ -54,9 +54,7 @@ output = arg.outputDir
 if output != "":
   if len(output.split('/')) != 2:
     output = output+"/"
-  if os.path.exists(output):
-    print "cosmic_muon_lhe_generator.py: Outpath: %s exists."%(output)
-  else:
+  if not os.path.exists(output):
     print "cosmic_muon_lhe_generator.py: Outpath does not exist, making %s"%(output)
     os.makedirs(output)
 # inputs to generate the muons
@@ -85,23 +83,66 @@ ADarminus = "(0.031055887893745797*TMath::Exp(2.172701227027019/(0.1236*TMath::C
 cmmc_spec = ROOT.TF2("cmmc_spec",ADar,emin,emax,thmin,thmax)
 cmmc_spec_plus = ROOT.TF2("cmmc_spec_plus",ADarplus,emin,emax,thmin,thmax)
 cmmc_spec_minus = ROOT.TF2("cmmc_spec_minus",ADarminus,emin,emax,thmin,thmax)
+# ADar*sin(theta) for integrating over theta later on
+cmmc_spec_sin = ROOT.TF2("cmmc_spec_sin",ADar+"*TMath::Sin(TMath::Pi()/180*y)",emin,emax,thmin,thmax)
+cmmc_spec1_sin = ROOT.TF2("cmmc_spec1_sin",ADar+"*TMath::Sin(TMath::Pi()/180*y)",emin,10.0,thmin,thmax)
 # full spectrum split along 10 GeV:
 cmmc_spec1 = ROOT.TF2("cmmc_spec1",ADar,emin,10.0,thmin,thmax)
 cmmc_spec2 = ROOT.TF2("cmmc_spec2",ADar,10.0,emax,thmin,thmax)
 # set the resolution over each energy range and over theta to 250 points.
-cmmc_spec1.SetNpy(250)
-cmmc_spec2.SetNpy(250)
+cmmc_spec.SetNpx(250)
+cmmc_spec.SetNpy(250)
+cmmc_spec_sin.SetNpx(250)
+cmmc_spec_sin.SetNpy(250)
+cmmc_spec1_sin.SetNpx(250)
+cmmc_spec1_sin.SetNpy(250)
 cmmc_spec1.SetNpx(250)
+cmmc_spec1.SetNpy(250)
 cmmc_spec2.SetNpx(250)
-# Find the fraction of events in the low E spectrum
-full_int = cmmc_spec.Integral(emin,emax,thmin,thmax)
-low_frac = cmmc_spec1.Integral(emin,10,thmin,thmax)/full_int
+cmmc_spec2.SetNpy(250)
+# Find the fraction of events in the low E spectrum, this requires doing integrals over theta, so I need to use ADar*Sin(theta), the sine factor comes from dOmega
+full_int = cmmc_spec_sin.Integral(emin,emax,thmin,thmax)
+low_frac = cmmc_spec1_sin.Integral(emin,10,thmin,thmax)/full_int
+# choose the correct hcal dimensions based on the user geometry choice. dx, dy, and dz are the full width, height, and depth of the detector in mm.
+dx = 3100.
+dy = 3100.
+if arg.geometry == "v3" or arg.geometry == "v4":
+  dz = 3290.
+elif arg.geometry == "v5":
+  dz = 3250.
+elif arg.geometry == "v6":
+  dz = 3282.
+elif arg.geometry == "v7":
+  dz = 6284.
+elif arg.geometry == "v8":
+  dz = 6274.
+elif arg.geometry == "v9":
+  dz = 4690.
+elif arg.geometry == "v10":
+  dx = 3000.
+  dy = 3000.
+  dz = 4690.
+else:
+  print "cosmic_muon_lhe_generator.py: geometry version "+arg.geometry+" not available."
+# calculate the expected average rate of muons intersecting the hcal. muon flux through the top: 0.00785918 muons/cm^2/s, side: 0.00306525 muons/cm^2/s
+# the factor of 100 is to change the dx, dy, and dz from mm to cm. 
+# this calculation give the rate of muons entering the ldmx hcal per second, muons/s
+# v3: 2015.9485132 muons/s
+# v4: 2015.9485132 muons/s
+# v5: 1998.60131 muons/s
+# v6: 2012.47907256 muons/s
+# v7: 3314.38667272 muons/s
+# v8: 3310.04987192 muons/s
+# v9: 2623.1006252 muons/s
+# v10: 2520.092976 muons/s
+total_rate = (0.00785918*dx*dz+0.00306525*2*dy*(dx+dz))/100
+print "cosmic_muon_lhe_generator.py: physical rate: "+str(total_rate)+" muons/s"
 # initialize, generate random numbers
 E = ROOT.Double()
 thdeg = ROOT.Double()
 print "cosmic_muon_lhe_generator.py: running..."
 for n in range(arg.numFiles):
-  filename = "cosmic_muons_"+str(int(emin))+"_"+str(int(emax))+"_GeV_"+str(int(thmin))+"_"+str(int(thmax))+"_deg_"+str(arg.numEvents)+"_events_%04d.lhe"%(n)
+  filename = "cosmic_muons_"+str(int(emin))+"_"+str(int(emax))+"_GeV_"+str(int(thmin))+"_"+str(int(thmax))+"_deg_"+str(arg.numEvents)+"_events_%s_detector_%04d.lhe"%(arg.geometry,n)
   new_lhe = open("%s%s"%(output,filename),"w")
   for i in range(arg.numEvents):
     rand = random.random()
@@ -127,14 +168,14 @@ for n in range(arg.numFiles):
     py = -p*math.cos(theta)
     pz = -p*math.sin(theta)*math.cos(phi)
     # pick a random point inside the full hcal volume in detector coordinates, (0,0,0) is the center of the target
-    xmin = -1550.
-    xmax = 1550.
+    xmin = -dx/2.
+    xmax = dx/2.
     x = random.uniform(xmin,xmax)
-    ymin = -1550.
-    ymax = 1550.
+    ymin = -dy/2.
+    ymax = dy/2.
     y = random.uniform(ymin,ymax)
     zmin = 200.
-    zmax = zmin + arg.hcalDepth
+    zmax = zmin + dz
     z = random.uniform(zmin,zmax)
     # find the intersection with the hcal volume
     # xt, yt, and zt are where the incoming muon would intersect infinite planes containing the planes of the hcal volume
