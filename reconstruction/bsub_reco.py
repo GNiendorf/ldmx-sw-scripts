@@ -54,9 +54,12 @@ def main():
     print "number of files: ", len(files)
     for i in range(0, len(files), step_size):
         
+        input_files_list = []
         input_files = "\'"
         for j in range(i, i+step_size, 1):
-            if j < len(files): input_files += " %s/%s" % (input_prefix, files[j]);
+            if j < len(files): 
+                input_files += " %s/%s" % (input_prefix, files[j]);
+                input_files_list.append( "%s/%s" % (input_prefix, files[j]) )
         input_files += "\'"
 
         #log_path = '%s/reco_%s.log' % (output_prefix, f.split(".")[0])
@@ -67,8 +70,19 @@ def main():
         print command, log_path
         # print batch_command
 
-        subprocess.Popen(batch_command, shell=True).wait()
-        time.sleep(0.1)
+        # find the first of the input files, strip the path, find if there is a file in the output directory with that in the name
+        first_input_path = input_files_list[0]
+        first_input_file = os.path.basename(first_input_path)
+        fileExists = False;
+        if (os.path.isfile(output_prefix + "/reco_" + first_input_file)): fileExists = True;
+        
+        print "basename = ", first_input_file, " ", first_input_path
+        if not fileExists:
+            print("file does not exist, run: %s" % (first_input_file))
+            subprocess.Popen(batch_command, shell=True).wait()
+            time.sleep(0.1)
+        else: 
+            print("!!!!!! file exists, do not run! %s" % (first_input_file))
 
         #if i > 4: break;
 
